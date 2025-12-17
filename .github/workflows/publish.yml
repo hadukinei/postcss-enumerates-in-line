@@ -1,9 +1,9 @@
 name: Publish Package to npmjs
-on: push
-#on:
-#  push:
-#    branches:
-#      - master
+#on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -18,11 +18,5 @@ jobs:
         with:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org/'
-          #scope: '@hadukinei'
-      #- run: npm i -g npm@latest
       - run: npm ci
-      #- run: npm pkg fix
-      #- run: npm publish --otp=068938
-      #  env:
-      #    NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN_PEIL }}
       - run: npm publish --provenance --access public

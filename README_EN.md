@@ -7,7 +7,7 @@
 
 ## Revision: in v0.0.1
 
-- Begin to publish.
+- Change connection a package loading from inner file-path to [npmjs.com](https://www.npmjs.com/).
 
 ---
 
