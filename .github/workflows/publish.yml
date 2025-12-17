@@ -19,9 +19,10 @@ jobs:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org/'
           #scope: '@hadukinei'
-      - run: npm i -g npm@latest
+      #- run: npm i -g npm@latest
       - run: npm ci
+      #- run: npm pkg fix
       #- run: npm publish --otp=068938
       #  env:
       #    NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN_PEIL }}
-      - run: npm publish
+      - run: npm publish --provenance --access public
