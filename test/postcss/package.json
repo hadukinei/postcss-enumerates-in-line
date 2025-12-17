@@ -1,0 +1,26 @@
+{
+  "name": "postcss",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "clean": "node build-clean.mjs",
+    "common:copy": "node build-copy.mjs",
+    "build:css": "node build-css.mjs -- build",
+    "dev:css": "node build-css.mjs -- dev",
+    "build": "npm run clean && run-s common:* build:*",
+    "dev": "run-s common:* dev:*"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "autoprefixer": "^10.4.23",
+    "glob": "^13.0.0",
+    "npm-run-all2": "^8.0.4",
+    "postcss": "^8.5.6",
+    "postcss-csso": "^6.0.1",
+    "sass": "^1.96.0"
+  }
+}

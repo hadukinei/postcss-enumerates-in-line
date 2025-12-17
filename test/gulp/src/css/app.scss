@@ -1,0 +1,112 @@
+// root
+:root {
+  @enums ff:"Outfit",sans-serif fw:400;
+}
+
+// utility
+.u-heading {
+  @enums fs:1.25em fw:700;
+}
+
+// wrapper
+.c-layout {
+  @enums w:100% wmax:1000px mx:auto;
+}
+
+// header
+.c-header {
+  @enums my:1.5rem;
+
+  &--caption {
+    @enums ff:"Rammetto^One",sans-serif fs:1.25em;
+  }
+
+  &--description {
+    @enums fs:0.85em;
+  }
+}
+
+// nav
+.c-nav {
+  @enums my:1.5rem;
+
+  &--lists {
+    @enums display:flex column-gap:1rem;
+
+    &--item {
+      &::before {
+        @enums display:inline content:"\0bb\020" ct:var(--enums-color-gray-600);
+      }
+
+      &--anchor {
+        @enums text-decoration:var(--enums-color-pink-500)^underline^dotted^2px text-underline-offset:4px transition:text-decoration-color^0.25s^ease,color^0.25s^ease;
+
+        &:hover {
+          @enums ct:var(--enums-color-pink-500) text-decoration-color:#fff0;
+        }
+      }
+    }
+  }
+}
+
+// contents
+.c-contents {
+  @enums display:grid row-gap:1.25rem container-type:inline-size;
+}
+
+.c-skills {
+  @enums display:grid;
+
+  &--item {
+    @enums display:block;
+  }
+}
+
+.c-projects {
+  @enums display:grid grid-template-columns:repeat(auto-fit,minmax(260px,1fr)) gap:1rem^1.5rem m8:0.375rem;
+
+  &--item {
+    @enums display:grid gap:0.5rem px:1rem py:0.5rem bw:1px bc:var(--enums-color-gray-700) br:0.75rem transition:transform^0.25s^ease,box-shadow^0.25s^ease,border-color^0.25s^ease;
+
+    &:hover {
+      @enums transform:translateY(-0.25rem) box-shadow:0^0.5rem^1rem^#0004 bc:var(--enums-color-pink-800);
+    }
+
+    &--description {
+      @enums fs:0.95em;
+    }
+
+    &--anchor {
+      @enums text-decoration:var(--enums-color-pink-500)^underline^dotted^2px text-underline-offset:4px transition:text-decoration-color^0.25s^ease,color^0.25s^ease;
+
+      &:hover {
+        @enums ct:var(--enums-color-pink-500) text-decoration-color:#fff0;
+      }
+    }
+  }
+}
+
+.c-contact {
+  @enums mx:auto w:600px wmax:100cqw;
+
+  &--form {
+    @enums display:grid gap:1rem;
+
+    &--input {
+      @enums px:0.5rem py:0.375rem br:0.5rem cb:var(--enums-color-gray-100) ct:var(--enums-color-gray-900) fs:1rem;
+    }
+
+    &--button {
+      @enums py:0.5rem br:0.5rem cb:var(--enums-color-pink-500) ct:var(--enums-color-gray-900) fs:1rem cursor:pointer transition:background-color^0.25s^ease,color^0.25s^ease;
+
+      &:hover {
+        @enums cb:#fff ct:var(--enums-color-pink-500);
+      }
+    }
+  }
+}
+
+// footer
+.c-footer {
+  @enums py:1.5rem fs:0.9rem text-align:center;
+}
