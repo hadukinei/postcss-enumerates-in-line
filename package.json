@@ -1,10 +1,10 @@
 {
   "name": "postcss-enumerates-in-line",
   "type": "module",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/hadukinei/postcss-enumerates-in-line"
   },
   "main": "index.mjs",
   "scripts": {},
