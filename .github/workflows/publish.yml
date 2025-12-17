@@ -18,6 +18,6 @@ jobs:
           registry-url: 'https://registry.npmjs.org/'
           scope: '@hadukinei'
       - run: npm ci
-      - run: npm publish --otp=821983
+      - run: npm publish --otp=432707
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN_PEIL }}
