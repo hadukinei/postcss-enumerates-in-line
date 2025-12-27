@@ -16,8 +16,8 @@ const sass = gulpSass(dartSass)
 import postcss from 'gulp-postcss'
 import autoprefixer from 'autoprefixer'
 import csso from 'postcss-csso'
-//import { enumSpreader } from 'postcss-enumerates-in-line'
-import { enumSpreader } from '../../index.mjs'
+import { enumSpreader } from 'postcss-enumerates-in-line'
+//import { enumSpreader } from '../../index.mjs'
 
 // Live Server
 import browserSync from 'browser-sync'

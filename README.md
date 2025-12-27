@@ -5,13 +5,14 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## 更新点: v0.2.0
+## 更新点: v0.3.0
 
 - 以下の条件付きCSSプロパティを追加
   + `hover!`
   + `dark!`
   + `mq(<mediaQueries>)!`
   + `data(<customDataElements>)`
+  + `aria(<ariaAttributes>)`
 - デフォルトカラーを[Flexoki]に変更
 - `_color.scss`を同梱
 - 作成例の`test/gulp/`と`test/postcss/`を更新
@@ -58,7 +59,7 @@
 
 ~~> [Tailwind CSS]における`hover:`・`md:`・`dark:`などに対応する機能は備えていないという意味です。~~
 
-☑️version 0.2.0以上
+☑️version 0.3.0以上
 
 またCSSプロパティ名の先頭に以下の書式を加筆することで、条件付きCSSプロパティに対応することができます。
 
@@ -66,6 +67,7 @@
 - `dark!`: :root.dark
 - `mq(<mediaQueries>)!`: @media screen and &lt;mediaQueries&gt;
 - `data(<customDataElements>)!`: [data-&lt;customDataElement&gt;]
+- `aria(<ariaAttributes>)!`: [aria-&lt;ariaAttributes&gt;]
 
 > 詳しい書式は目次の次へお進みください。
 
@@ -84,7 +86,7 @@
 ## 目次
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [更新点: v0.2.0](#更新点-v020)
+  - [更新点: v0.3.0](#更新点-v030)
   - [実装予定](#実装予定)
   - [目次](#目次)
   - [CSSでの記述方法](#cssでの記述方法)
@@ -93,6 +95,7 @@
       - [マウスオーバー](#マウスオーバー)
       - [メディアクエリ](#メディアクエリ)
       - [カスタムデータ属性](#カスタムデータ属性)
+      - [ARIA属性](#aria属性)
     - [特殊な記号](#特殊な記号)
       - [コロン記号](#コロン記号)
       - [エクスクラメーション記号](#エクスクラメーション記号)
@@ -160,7 +163,7 @@ h1 {
 
 上記のように`条件付き書式!CSSプロパティ名:CSSプロパティ値`と記法を拡張することができます。
 
-`hover!`, `dark!`, `mq(...)!`, `data(...)!`はそれぞれ重ね掛けが可能です。
+`hover!`, `dark!`, `mq(...)!`, `data(...)!`, `aria(...)!`はそれぞれ重ね掛けが可能です。
 
 ```scss
 h1 {
@@ -168,7 +171,7 @@ h1 {
 }
 ```
 
-ただしこれら条件付き書式は１つのCSSプロパティにつき１種しか設定できないため、`mq(...)!`と`data(...)!`を連続して記述できません。
+ただしこれら条件付き書式は１つのCSSプロパティにつき１種しか設定できないため、`mq(...)!`・`data(...)!`・`aria(...)!`を連続して記述できません。
 
 列挙する場合は`(`・`)`の中で、`,`を使ってください。
 
@@ -404,6 +407,46 @@ h1[data-is-empty="false"] {
 > + `\`: %5D
 
 
+#### ARIA属性
+
+条件付き書式`aria(<ariaAttributes>)!`を使うと、`[aria-label="heading"]`のようなARIA属性によるセレクターを追加できます。
+
+複数の属性セレクターを組み合わせる場合は、`,`で区切ります。
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums aria(label="heading")!fs:1.5rem;
+}
+
+/* 🚀After */
+h1[aria-label="heading"] {
+  font-size: 1.5rem;
+}
+```
+
+属性セレクターは`属性名`・`=`・`属性データ`の組み合わせになっています。
+
+> 属性名には`aria-`に続く文字列を指定します。
+>
+> `/[a-z]/`の文字しか使うことはできません。
+
+> 条件演算子は現在`=`のみを有効にしています。
+>
+> 必要になれば`data(...)!`と同等の条件にまで拡張するかもしれません。
+
+> 属性データは、`"`または`'`で囲まれている必要があります。
+>
+> このため引用符を使う場合は注意してください。
+>
+> またパッケージの内部処理により、以下の文字が属性データに含まれる場合はパーセントエンコーディングを行います。
+> + `%`: %25
+> + `"`: %22
+> + `'`: %27
+> + `｀`: %60
+> + `\`: %5D
+
+
 ### 特殊な記号
 
 特殊な振る舞いを起こす文字は、`:`・`^`・`!`・`[[`・`]]`の５種類です。
@@ -484,19 +527,7 @@ body {
 }
 ```
 
-||0|50|100|150|200|300|400|500|600|700|800|850|900|950|999|
-|--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-|<b>black</b>|<div style="background-color:#100F0F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#100F0F</small>||||||||||||||<div style="background-color:#000000">⠶</div><small style="font-size:0.66rem;font-family:monospace">#000000</small>|
-|<b>white</b>|<div style="background-color:#FFFCF0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFFCF0</small>||||||||||||||<div style="background-color:#FFFFFF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFFFFF</small>|
-|<b>base</b>||<div style="background-color:#F2F0E5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F2F0E5</small>|<div style="background-color:#E6E4D9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E6E4D9</small>|<div style="background-color:#DAD8CE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DAD8CE</small>|<div style="background-color:#CECDC3">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CECDC3</small>|<div style="background-color:#B7B5AC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#B7B5AC</small>|<div style="background-color:#9F9D96">⠶</div><small style="font-size:0.66rem;font-family:monospace">#9F9D96</small>|<div style="background-color:#878580">⠶</div><small style="font-size:0.66rem;font-family:monospace">#878580</small>|<div style="background-color:#6F6E69">⠶</div><small style="font-size:0.66rem;font-family:monospace">#6F6E69</small>|<div style="background-color:#575653">⠶</div><small style="font-size:0.66rem;font-family:monospace">#575653</small>|<div style="background-color:#403E3C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#403E3C</small>|<div style="background-color:#343331">⠶</div><small style="font-size:0.66rem;font-family:monospace">#343331</small>|<div style="background-color:#282726">⠶</div><small style="font-size:0.66rem;font-family:monospace">#282726</small>|<div style="background-color:#1C1B1A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1C1B1A</small>||
-|<b>red</b>||<div style="background-color:#FFE1D5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFE1D5</small>|<div style="background-color:#FFCABB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFCABB</small>|<div style="background-color:#FDB2A2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FDB2A2</small>|<div style="background-color:#F89A8A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F89A8A</small>|<div style="background-color:#E8705F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E8705F</small>|<div style="background-color:#D14D41">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D14D41</small>|<div style="background-color:#C03E35">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C03E35</small>|<div style="background-color:#AF3029">⠶</div><small style="font-size:0.66rem;font-family:monospace">#AF3029</small>|<div style="background-color:#942822">⠶</div><small style="font-size:0.66rem;font-family:monospace">#942822</small>|<div style="background-color:#6C201C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#6C201C</small>|<div style="background-color:#551B18">⠶</div><small style="font-size:0.66rem;font-family:monospace">#551B18</small>|<div style="background-color:#3E1715">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3E1715</small>|<div style="background-color:#261312">⠶</div><small style="font-size:0.66rem;font-family:monospace">#261312</small>||
-|<b>orange</b>||<div style="background-color:#FFE7CE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFE7CE</small>|<div style="background-color:#FED3AF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FED3AF</small>|<div style="background-color:#FCC192">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FCC192</small>|<div style="background-color:#F9AE77">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F9AE77</small>|<div style="background-color:#EC8B49">⠶</div><small style="font-size:0.66rem;font-family:monospace">#EC8B49</small>|<div style="background-color:#DA702C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DA702C</small>|<div style="background-color:#CB6120">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CB6120</small>|<div style="background-color:#BC5215">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BC5215</small>|<div style="background-color:#9D4310">⠶</div><small style="font-size:0.66rem;font-family:monospace">#9D4310</small>|<div style="background-color:#71320D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#71320D</small>|<div style="background-color:#59290D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#59290D</small>|<div style="background-color:#40200D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#40200D</small>|<div style="background-color:#27180E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#27180E</small>||
-|<b>yellow</b>||<div style="background-color:#FAEEC6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FAEEC6</small>|<div style="background-color:#F6E2A0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F6E2A0</small>|<div style="background-color:#F1D67E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F1D67E</small>|<div style="background-color:#ECCB60">⠶</div><small style="font-size:0.66rem;font-family:monospace">#ECCB60</small>|<div style="background-color:#DFB431">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DFB431</small>|<div style="background-color:#D0A215">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D0A215</small>|<div style="background-color:#BE9207">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BE9207</small>|<div style="background-color:#AD8301">⠶</div><small style="font-size:0.66rem;font-family:monospace">#AD8301</small>|<div style="background-color:#8E6B01">⠶</div><small style="font-size:0.66rem;font-family:monospace">#8E6B01</small>|<div style="background-color:#664D01">⠶</div><small style="font-size:0.66rem;font-family:monospace">#664D01</small>|<div style="background-color:#503D02">⠶</div><small style="font-size:0.66rem;font-family:monospace">#503D02</small>|<div style="background-color:#3A2D04">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3A2D04</small>|<div style="background-color:#241E08">⠶</div><small style="font-size:0.66rem;font-family:monospace">#241E08</small>||
-|<b>green</b>||<div style="background-color:#EDEECF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#EDEECF</small>|<div style="background-color:#DDE2B2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DDE2B2</small>|<div style="background-color:#CDD597">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CDD597</small>|<div style="background-color:#BEC97E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BEC97E</small>|<div style="background-color:#A0AF54">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A0AF54</small>|<div style="background-color:#879A39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#879A39</small>|<div style="background-color:#768D21">⠶</div><small style="font-size:0.66rem;font-family:monospace">#768D21</small>|<div style="background-color:#66800B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#66800B</small>|<div style="background-color:#536907">⠶</div><small style="font-size:0.66rem;font-family:monospace">#536907</small>|<div style="background-color:#3D4C07">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3D4C07</small>|<div style="background-color:#313D07">⠶</div><small style="font-size:0.66rem;font-family:monospace">#313D07</small>|<div style="background-color:#252D09">⠶</div><small style="font-size:0.66rem;font-family:monospace">#252D09</small>|<div style="background-color:#1A1E0C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A1E0C</small>||
-|<b>cyan</b>||<div style="background-color:#DDF1E4">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DDF1E4</small>|<div style="background-color:#BFE8D9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BFE8D9</small>|<div style="background-color:#A2DECE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A2DECE</small>|<div style="background-color:#87D3C3">⠶</div><small style="font-size:0.66rem;font-family:monospace">#87D3C3</small>|<div style="background-color:#5ABDAC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#5ABDAC</small>|<div style="background-color:#3AA99F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3AA99F</small>|<div style="background-color:#2F968D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#2F968D</small>|<div style="background-color:#24837B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#24837B</small>|<div style="background-color:#1C6C66">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1C6C66</small>|<div style="background-color:#164F4A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#164F4A</small>|<div style="background-color:#143F3C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#143F3C</small>|<div style="background-color:#122F2C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#122F2C</small>|<div style="background-color:#101F1D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#101F1D</small>||
-|<b>blue</b>||<div style="background-color:#E1ECEB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E1ECEB</small>|<div style="background-color:#C6DDE8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C6DDE8</small>|<div style="background-color:#ABCFE2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#ABCFE2</small>|<div style="background-color:#92BFDB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#92BFDB</small>|<div style="background-color:#66A0C8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#66A0C8</small>|<div style="background-color:#4385BE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4385BE</small>|<div style="background-color:#3171B2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3171B2</small>|<div style="background-color:#205EA6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#205EA6</small>|<div style="background-color:#1A4F8C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A4F8C</small>|<div style="background-color:#163B66">⠶</div><small style="font-size:0.66rem;font-family:monospace">#163B66</small>|<div style="background-color:#133051">⠶</div><small style="font-size:0.66rem;font-family:monospace">#133051</small>|<div style="background-color:#12253B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#12253B</small>|<div style="background-color:#101A24">⠶</div><small style="font-size:0.66rem;font-family:monospace">#101A24</small>||
-|<b>purple</b>||<div style="background-color:#F0EAEC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F0EAEC</small>|<div style="background-color:#E2D9E9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E2D9E9</small>|<div style="background-color:#D3CAE6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D3CAE6</small>|<div style="background-color:#C4B9E0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C4B9E0</small>|<div style="background-color:#A699D0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A699D0</small>|<div style="background-color:#8B7EC8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#8B7EC8</small>|<div style="background-color:#735EB5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#735EB5</small>|<div style="background-color:#5E409D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#5E409D</small>|<div style="background-color:#4F3685">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4F3685</small>|<div style="background-color:#3C2A62">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3C2A62</small>|<div style="background-color:#31234E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#31234E</small>|<div style="background-color:#261C39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#261C39</small>|<div style="background-color:#1A1623">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A1623</small>||
-|<b>magenta</b>||<div style="background-color:#FEE4E5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FEE4E5</small>|<div style="background-color:#FCCFDA">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FCCFDA</small>|<div style="background-color:#F9B9CF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F9B9CF</small>|<div style="background-color:#F4A4C2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F4A4C2</small>|<div style="background-color:#E47DA8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E47DA8</small>|<div style="background-color:#CE5D97">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CE5D97</small>|<div style="background-color:#B74583">⠶</div><small style="font-size:0.66rem;font-family:monospace">#B74583</small>|<div style="background-color:#A02F6F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A02F6F</small>|<div style="background-color:#87285E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#87285E</small>|<div style="background-color:#641F46">⠶</div><small style="font-size:0.66rem;font-family:monospace">#641F46</small>|<div style="background-color:#4F1B39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4F1B39</small>|<div style="background-color:#39172B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#39172B</small>|<div style="background-color:#24131D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#24131D</small>||
+[<img src="README.img/default_color.png" alt="Default color">](README.img/default_color.png)
 
 しかし現状では`#RRGGBBAA`書式のアルファチャンネル付き色設定ができないため、`_color.scss`を同梱しています。
 

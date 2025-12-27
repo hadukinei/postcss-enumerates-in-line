@@ -135,6 +135,7 @@ export const enumSpreader = (options = {}) => {
                 isDark: false,
                 isMq: '',
                 isData: '',
+                isAria: '',
                 important: '',
                 prop: '',
                 value: '',
@@ -258,14 +259,26 @@ export const enumSpreader = (options = {}) => {
                 param[i] = param[i].replace(/data\(.+?\)!/g, '')
               }
 
-              if(setting.isHover || setting.isDark || (setting.isMq !== '') || (setting.isData !== '')) {
+              if(/aria\(.+?\)!/.test(param[i])) {
+                setting.isAria = []
+                ;(!!param[i].match(/aria\((.+?)\)!/)[1] ? param[i].match(/aria\((.+?)\)!/)[1] : '').split(',').forEach(q => {
+                  let v = q.match(/^([a-z]+)=['"](.*)['"]$/)
+                  if(!!v) {
+                    setting.isAria.push(`[aria-${v[1]}="${v[2].replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
+                  }
+                })
+                setting.isAria = setting.isAria.join('')
+                param[i] = param[i].replace(/aria\(.+?\)!/g, '')
+              }
+
+              if(setting.isHover || setting.isDark || (setting.isMq !== '') || (setting.isData !== '') || (setting.isAria !== '')) {
                 let regex = param[i].match(/^([\d\-a-z]+):([^!\s]+)(!)?$/)
                 setting.important = (!!regex[3]) ? ' !important' : ''
                 setting.prop = expandShortcut(regex[1])
                 setting.value = replaceCssPropertyValueWBracket(regex[2])
 
                 for(let j = 0, m = setting.prop.length; j < m; j ++) {
-                  const css = `${setting.isMq !== '' ? '@media screen and ' + setting.isMq + ' { ' : ''}${setting.isDark ? ':root.dark ' : ''}${rule.selector}${setting.isData}${setting.isHover ? ':hover' : ''}{${setting.prop[j]}: ${setting.value}}${setting.isMq !== '' ? ' }' : ''}`
+                  const css = `${setting.isMq !== '' ? '@media screen and ' + setting.isMq + ' { ' : ''}${setting.isDark ? ':root.dark ' : ''}${rule.selector}${setting.isData}${setting.isAria}${setting.isHover ? ':hover' : ''}{${setting.prop[j]}: ${setting.value}}${setting.isMq !== '' ? ' }' : ''}`
                   rule.after(css)
                 }
               } else if(/^([\d\-a-z]+):([^!\s]+)(!)?$/.test(param[i])) {
