@@ -5,9 +5,23 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## 更新点: v0.1.0
+## 更新点: v0.2.0
 
-- サンプルのパッケージ読み込みを[npmjs.com](https://www.npmjs.com/)経由に変更
+- 以下の条件付きCSSプロパティを追加
+  + `hover!`
+  + `dark!`
+  + `mq(<mediaQueries>)!`
+  + `data(<customDataElements>)`
+- デフォルトカラーを[Flexoki]に変更
+- `_color.scss`を同梱
+- 作成例の`test/gulp/`と`test/postcss/`を更新
+
+
+## 実装予定
+
+- ユーザー定義ショートハンド機能
+- `[[...]]`構文の改良と、デフォルトカラーにアルファチャンネルを設定できる`color-alpha[[...]]`構文の追加
+
 
 ---
 
@@ -39,12 +53,21 @@
 >
 > `:`記号の前がプロパティ名、後ろがプロパティ値になっています。
 > ホワイトスペースはプロパティの区切り文字であるため、プロパティ値に半角スペース記号を使いたい場合は`^`で代用します。
->
+
+~~プロパティの列挙を目的としているため、hoverのような状態遷移・メディアクエリ・ダークモードなどへの対応はしません。~~
+
+~~> [Tailwind CSS]における`hover:`・`md:`・`dark:`などに対応する機能は備えていないという意味です。~~
+
+☑️version 0.2.0以上
+
+またCSSプロパティ名の先頭に以下の書式を加筆することで、条件付きCSSプロパティに対応することができます。
+
+- `hover!`: :hover
+- `dark!`: :root.dark
+- `mq(<mediaQueries>)!`: @media screen and &lt;mediaQueries&gt;
+- `data(<customDataElements>)!`: [data-&lt;customDataElement&gt;]
+
 > 詳しい書式は目次の次へお進みください。
-
-プロパティの列挙を目的としているため、hoverのような状態遷移・メディアクエリ・ダークモードなどへの対応はしません。
-
-> [Tailwind CSS]における`hover:`・`md:`・`dark:`などに対応する機能は備えていないという意味です。
 
 基本的には[gulp]および[gulp-postcss]での動作を想定していますが、JS-APIによるPostCSS単体でも動作します。
 
@@ -53,6 +76,7 @@
 [SCSS]: https://sass-lang.com/
 [gulp]: https://gulpjs.com/
 [gulp-postcss]: https://github.com/postcss/gulp-postcss
+[Flexoki]: https://stephango.com/flexoki
 
 <div class="x--hr"></div>
 
@@ -60,14 +84,21 @@
 ## 目次
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [更新点: v0.1.0](#更新点-v010)
+  - [更新点: v0.2.0](#更新点-v020)
+  - [実装予定](#実装予定)
   - [目次](#目次)
   - [CSSでの記述方法](#cssでの記述方法)
+    - [条件付き書式](#条件付き書式)
+      - [ダークモード](#ダークモード)
+      - [マウスオーバー](#マウスオーバー)
+      - [メディアクエリ](#メディアクエリ)
+      - [カスタムデータ属性](#カスタムデータ属性)
     - [特殊な記号](#特殊な記号)
       - [コロン記号](#コロン記号)
       - [エクスクラメーション記号](#エクスクラメーション記号)
       - [サーカムフレックス記号](#サーカムフレックス記号)
       - [二重角括弧記号](#二重角括弧記号)
+    - [デフォルトカラー](#デフォルトカラー)
     - [プロパティ名のショートハンド](#プロパティ名のショートハンド)
   - [プラグインを使用する方法](#プラグインを使用する方法)
     - [gulpでの使い方](#gulpでの使い方)
@@ -100,7 +131,7 @@ html {
   @enums background-color:#000 color:#fff;
 
   h1 {
-    @enums font-size:100%;
+    @enums font-size:100% hover!color:red;
   }
 }
 ```
@@ -114,6 +145,263 @@ html {
 CSSスタイル宣言についても単純で、「`プロパティ名`・`半角コロン記号`・`プロパティ値`」の組み合わせになっています。
 
 プロパティ値は任意の値を取ることができるため、`border:1px^#888^solid`など自由な指示をすることができるでしょう。
+
+
+### 条件付き書式
+
+```scss
+h1 {
+  @emums data(visible="hidden")!display:none
+  ct:blue hover!ct:red
+  cb:white dark!cb:black
+  mq(width:1000px-)!mx:auto;
+}
+```
+
+上記のように`条件付き書式!CSSプロパティ名:CSSプロパティ値`と記法を拡張することができます。
+
+`hover!`, `dark!`, `mq(...)!`, `data(...)!`はそれぞれ重ね掛けが可能です。
+
+```scss
+h1 {
+  @enums dark!hover!ct:red;
+}
+```
+
+ただしこれら条件付き書式は１つのCSSプロパティにつき１種しか設定できないため、`mq(...)!`と`data(...)!`を連続して記述できません。
+
+列挙する場合は`(`・`)`の中で、`,`を使ってください。
+
+同種の条件付き書式を重複させた場合、最初のものだけが適用され、残りの指定内容は無視されます。
+
+```scss
+/* ❌️NG */
+h1 {
+  @enums mq(width:-640px)!mq(orientation:portrait)!m2:auto
+  data(state="succeed")!data(target-href^="https://")!text-indent:1rem;
+}
+
+/* ⭕️OK */
+h1 {
+  @enums mq(width:-640px,orientation:portrait)!m2:auto
+  data(state="succeed",target-href^="https://")!text-indent:1rem;
+}
+
+/* 🙂Unzip */
+@media screen and (max-width: 640px) and (orientation: portrait) {
+  h1 {
+    margin-bottom: auto;
+  }
+}
+h1[data-state="succeed"][data-target-href^="https://"] {
+  text-indent: 1rem;
+}
+```
+
+
+#### ダークモード
+
+条件付き書式`dark!`を使うと、`root:`（html要素）に`dark`クラスが存在するかどうかで判定できるようになります。
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums cb:white dark!cb:black;
+}
+
+/* 🚀After */
+h1 {
+  background-color: white;
+}
+:root.dark h1 {
+  background-color: black;
+}
+```
+
+
+#### マウスオーバー
+
+条件付き書式`hover!`を使うと、`:hover`（マウスオーバー状態）擬似クラスを追加できます。
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums ct:blue hover!ct:red;
+}
+
+/* 🚀After */
+h1 {
+  color: blue;
+}
+h1:hover {
+  color: red;
+}
+```
+
+
+#### メディアクエリ
+
+条件付き書式`mq(<mediaQueries>)!`を使うと、`@media`ルールの中に入れることができます。
+
+複数のメディアクエリを組み合わせる場合は、`,`で区切ります。
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums mq(width:1000px-)!m2:auto
+  mq(height:-1000px,aspect-ratio:1-)!p:1.5rem;
+}
+
+/* 🚀After */
+@media screen and (min-width: 1000px) {
+  h1 {
+    margin-bottom: auto;
+  }
+}
+@media screen and (max-height: 1000px) and (min-aspect-ratio: 1) {
+  h1 {
+    padding: 1.5rem;
+  }
+}
+```
+
+`mq(...)`関数の引数となるメディアクエリは、`メディア特性`・`:`・`条件値`の組み合わせになっています。
+
+利用可能なメディア特性は次の通りですが、条件値によって出力される実際のメディア特性が変化します。
+
+- `orientation`: orientation
+- `width`: width, min-width, max-width
+- `height`: height, min-height, max-height
+- `aspect-ratio`: aspect-ratio, min-aspect-ratio, max-aspect-ratio
+
+> `orientation`に指定可能な条件値は、`portrait`（縦長または正方形）と`landscape`（横長）のいずれかのみです。
+
+```scss
+body {
+  @enums
+  mq(orientation:portrait)!m2:1rem
+  mq(orientation:landscape)!m8:1rem
+  ;
+}
+```
+
+> `width`に指定可能な条件値は、`-<length>`・`<length>-<length>`・`<length>-`の３種類です。
+>
+> `<length>`に指定可能なのは`px`・`rem`・`vw`など長さに関わる値です。
+>
+> + １つのみある`<length>`の前に`-`を付けた場合、`<length>`以下のメディアクエリを意味します（適用されるメディア特性は`max-width`）
+> + ２つの`<length>`を`-`で接続した場合、その区間以内であるメディアクエリを意味します（適用されるメディア特性は`min-width`と`max-width`）
+> + １つのみある`<length>`の後ろに`-`を付けた場合、`<length>`以上のメディアクエリを意味します（適用されるメディア特性は`min-width`）
+
+```scss
+body {
+  @enums
+  mq(width:-480px)!m2:1rem
+  mq(width:640px-1024px)!mx:1rem
+  mq(width:1280px)!m8:1rem
+  ;
+}
+```
+
+> `height`に指定可能な条件値、および動作は`width`と同じです。
+>
+> ただし適用されるメディア特性は、`height`・`min-height`・`max-height`に変化します。
+
+```scss
+body {
+  @enums
+  mq(height:-480px)!m2:1rem
+  mq(height:640px-1024px)!mx:1rem
+  mq(height:1280px)!m8:1rem
+  ;
+}
+```
+
+> `aspect-ratio`に指定可能な条件値は、`整数値`（1など）または`小数値`（0.85など）です。
+>
+> `@media (aspect-ratio: 16/9)`のような除算記号（`/`）を使った表記はできません。
+>
+> `width`・`height`に似た表記が可能で、`-<number>`・`<number>-<number>`・`<number>-`の３種類と`<number>`が実際に指定可能な条件値です。
+>
+> + １つのみある`<number>`の前に`-`を付けた場合、`<number>`以下のメディアクエリを意味します（適用されるメディア特性は`max-aspect-ratio`）
+> + ２つの`<number>`を`-`で接続した場合、その区間以内であるメディアクエリを意味します（適用されるメディア特性は`min-aspect-ratio`と`max-aspect-ratio`）
+> + １つのみある`<number>`の後ろに`-`を付けた場合、`<number>`以上のメディアクエリを意味します（適用されるメディア特性は`min-aspect-ratio`）
+> + `<number>`が１つのみあって`-`がない場合、アスペクト比が`<number>`とまったく等しい状態を意味します（適用されるメディア特性は`aspect-ratio`）
+
+```scss
+body {
+  @enums
+  mq(aspect-ratio:-0.5)!m2:1rem
+  mq(aspect-ratio:0.55-0.95)!mx:1rem
+  mq(aspect-ratio:1.25-)!m8:1rem
+  mq(aspect-ratio:1)!p:1rem
+  ;
+}
+```
+
+
+#### カスタムデータ属性
+
+条件付き書式`data(<customDataElements>)!`を使うと、`[data-foo="bar"]`のようなカスタムデータによる属性セレクターを追加できます。
+
+複数の属性セレクターを組み合わせる場合は、`,`で区切ります。
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums data(visible="hidden")!display:none;
+}
+
+/* 🚀After */
+h1[data-visible="hidden"] {
+  display: none;
+}
+```
+
+属性セレクターは`属性名`、または`属性名`・`条件演算子`・`属性データ`の組み合わせになっています。
+
+属性名が存在することだけを条件にする場合は、`条件演算子`と`属性データ`を必要としません。
+
+```scss
+/* 🚧Before */
+h1 {
+  @enums data(loading)!display:none
+  data(is-empty="false")!m8:1rem;
+}
+
+/* 🚀After */
+h1[data-loading] {
+  display: none;
+}
+h1[data-is-empty="false"] {
+  margin-top: 1rem;
+}
+```
+
+> 属性名には`data-`に続く文字列を指定します。
+>
+> 具体的には`/[A-Za-z\d_\-]/`の文字が使用可能ですが、属性名の始端または終端を`-`の文字列とすることはできません。
+
+> 条件演算子には次の種類を使用することができます。
+> + `=`: 属性データと一致する場合（`[data-foo="bar"]`）
+> + `~=`: 属性データが空白記号区切りリストであり、その中の１つと一致する場合（`[data-tags~="ipsum"]`, `<span data-tags="lorem ipsum dolor sit amet"></span>`）
+> + `^=`: 属性データの文字列で始まる場合（`[data-href^="https://"]`）
+> + `$=`: 属性データの文字列で終わる場合（`[data-href$=".webp"]`）
+> + `*=`: 属性データの文字列を含む場合（`[data-alphabet*="bcdef"]`）
+> + `|=`: 属性データと一致する文字列で始まり、かつその後ろに半角ハイフン記号を伴う場合（`[data-lang|="en"]`）
+>
+> > 言語タグとして`en-US`や`en-GB`など、ISO 639 + ISO 3166による表現を行う場合に利用されることの多い表現です。
+
+> 属性データは、`"`または`'`で囲まれている必要があります。
+>
+> このため引用符を使う場合は注意してください。
+>
+> またパッケージの内部処理により、以下の文字が属性データに含まれる場合はパーセントエンコーディングを行います。
+> + `%`: %25
+> + `"`: %22
+> + `'`: %27
+> + `｀`: %60
+> + `\`: %5D
 
 
 ### 特殊な記号
@@ -133,6 +421,8 @@ CSSスタイル宣言についても単純で、「`プロパティ名`・`半�
 #### エクスクラメーション記号
 
 `padding-top:1rem!`などのようにして、`!`記号をプロパティ値の末尾に付けると`!important`宣言をしたことになります。
+
+> 条件付き書式の`!`とは働きが異なるためご注意ください。
 
 
 #### サーカムフレックス記号
@@ -173,12 +463,64 @@ CSSスタイル宣言についても単純で、「`プロパティ名`・`半�
 `width:calc(100vw^-^(100%^+^2rem)^*^2^+^1rem)`のような記述は視覚的ではないため、`[[`と`]]`に囲んだ中であれば`width:calc[[100vw-(100%+2rem)*(2)+1rem]]`としてサーカムフレックス記号を省くことができます。
 
 > `var`関数など算術関数でないものに`[[`・`]]`記号は使わないでください。
-> 
+>
 > 例えば`var(--foo-bar)`が誤変換されて、`var(--foo - bar)`のようにして意味のないCSSへと破壊されてしまうためです。
 
 しかし変換書式を改善中であるため、意図したように演算子の両端へ正常に空白記号が挿入されない可能性があります。
 
 こうした場合でも`^`記号を補えば正常な算術関数へと修正できるのですが、より確実な手段としては`[[`・`]]`記号を使わず人力で`^`記号を補う方が間違いは少ないでしょう。
+
+
+
+### デフォルトカラー
+
+デフォルトカラーは[Flexoki] v2.0からのフォークです。
+
+CSSの`var()`関数を使い、CSS変数から呼び出して使用します。
+
+```scss
+body {
+  @enums ct:var(--color-red-400);
+}
+```
+
+||0|50|100|150|200|300|400|500|600|700|800|850|900|950|999|
+|--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+|<b>black</b>|<div style="background-color:#100F0F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#100F0F</small>||||||||||||||<div style="background-color:#000000">⠶</div><small style="font-size:0.66rem;font-family:monospace">#000000</small>|
+|<b>white</b>|<div style="background-color:#FFFCF0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFFCF0</small>||||||||||||||<div style="background-color:#FFFFFF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFFFFF</small>|
+|<b>base</b>||<div style="background-color:#F2F0E5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F2F0E5</small>|<div style="background-color:#E6E4D9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E6E4D9</small>|<div style="background-color:#DAD8CE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DAD8CE</small>|<div style="background-color:#CECDC3">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CECDC3</small>|<div style="background-color:#B7B5AC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#B7B5AC</small>|<div style="background-color:#9F9D96">⠶</div><small style="font-size:0.66rem;font-family:monospace">#9F9D96</small>|<div style="background-color:#878580">⠶</div><small style="font-size:0.66rem;font-family:monospace">#878580</small>|<div style="background-color:#6F6E69">⠶</div><small style="font-size:0.66rem;font-family:monospace">#6F6E69</small>|<div style="background-color:#575653">⠶</div><small style="font-size:0.66rem;font-family:monospace">#575653</small>|<div style="background-color:#403E3C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#403E3C</small>|<div style="background-color:#343331">⠶</div><small style="font-size:0.66rem;font-family:monospace">#343331</small>|<div style="background-color:#282726">⠶</div><small style="font-size:0.66rem;font-family:monospace">#282726</small>|<div style="background-color:#1C1B1A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1C1B1A</small>||
+|<b>red</b>||<div style="background-color:#FFE1D5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFE1D5</small>|<div style="background-color:#FFCABB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFCABB</small>|<div style="background-color:#FDB2A2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FDB2A2</small>|<div style="background-color:#F89A8A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F89A8A</small>|<div style="background-color:#E8705F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E8705F</small>|<div style="background-color:#D14D41">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D14D41</small>|<div style="background-color:#C03E35">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C03E35</small>|<div style="background-color:#AF3029">⠶</div><small style="font-size:0.66rem;font-family:monospace">#AF3029</small>|<div style="background-color:#942822">⠶</div><small style="font-size:0.66rem;font-family:monospace">#942822</small>|<div style="background-color:#6C201C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#6C201C</small>|<div style="background-color:#551B18">⠶</div><small style="font-size:0.66rem;font-family:monospace">#551B18</small>|<div style="background-color:#3E1715">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3E1715</small>|<div style="background-color:#261312">⠶</div><small style="font-size:0.66rem;font-family:monospace">#261312</small>||
+|<b>orange</b>||<div style="background-color:#FFE7CE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFE7CE</small>|<div style="background-color:#FED3AF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FED3AF</small>|<div style="background-color:#FCC192">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FCC192</small>|<div style="background-color:#F9AE77">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F9AE77</small>|<div style="background-color:#EC8B49">⠶</div><small style="font-size:0.66rem;font-family:monospace">#EC8B49</small>|<div style="background-color:#DA702C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DA702C</small>|<div style="background-color:#CB6120">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CB6120</small>|<div style="background-color:#BC5215">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BC5215</small>|<div style="background-color:#9D4310">⠶</div><small style="font-size:0.66rem;font-family:monospace">#9D4310</small>|<div style="background-color:#71320D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#71320D</small>|<div style="background-color:#59290D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#59290D</small>|<div style="background-color:#40200D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#40200D</small>|<div style="background-color:#27180E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#27180E</small>||
+|<b>yellow</b>||<div style="background-color:#FAEEC6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FAEEC6</small>|<div style="background-color:#F6E2A0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F6E2A0</small>|<div style="background-color:#F1D67E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F1D67E</small>|<div style="background-color:#ECCB60">⠶</div><small style="font-size:0.66rem;font-family:monospace">#ECCB60</small>|<div style="background-color:#DFB431">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DFB431</small>|<div style="background-color:#D0A215">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D0A215</small>|<div style="background-color:#BE9207">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BE9207</small>|<div style="background-color:#AD8301">⠶</div><small style="font-size:0.66rem;font-family:monospace">#AD8301</small>|<div style="background-color:#8E6B01">⠶</div><small style="font-size:0.66rem;font-family:monospace">#8E6B01</small>|<div style="background-color:#664D01">⠶</div><small style="font-size:0.66rem;font-family:monospace">#664D01</small>|<div style="background-color:#503D02">⠶</div><small style="font-size:0.66rem;font-family:monospace">#503D02</small>|<div style="background-color:#3A2D04">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3A2D04</small>|<div style="background-color:#241E08">⠶</div><small style="font-size:0.66rem;font-family:monospace">#241E08</small>||
+|<b>green</b>||<div style="background-color:#EDEECF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#EDEECF</small>|<div style="background-color:#DDE2B2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DDE2B2</small>|<div style="background-color:#CDD597">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CDD597</small>|<div style="background-color:#BEC97E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BEC97E</small>|<div style="background-color:#A0AF54">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A0AF54</small>|<div style="background-color:#879A39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#879A39</small>|<div style="background-color:#768D21">⠶</div><small style="font-size:0.66rem;font-family:monospace">#768D21</small>|<div style="background-color:#66800B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#66800B</small>|<div style="background-color:#536907">⠶</div><small style="font-size:0.66rem;font-family:monospace">#536907</small>|<div style="background-color:#3D4C07">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3D4C07</small>|<div style="background-color:#313D07">⠶</div><small style="font-size:0.66rem;font-family:monospace">#313D07</small>|<div style="background-color:#252D09">⠶</div><small style="font-size:0.66rem;font-family:monospace">#252D09</small>|<div style="background-color:#1A1E0C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A1E0C</small>||
+|<b>cyan</b>||<div style="background-color:#DDF1E4">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DDF1E4</small>|<div style="background-color:#BFE8D9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BFE8D9</small>|<div style="background-color:#A2DECE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A2DECE</small>|<div style="background-color:#87D3C3">⠶</div><small style="font-size:0.66rem;font-family:monospace">#87D3C3</small>|<div style="background-color:#5ABDAC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#5ABDAC</small>|<div style="background-color:#3AA99F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3AA99F</small>|<div style="background-color:#2F968D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#2F968D</small>|<div style="background-color:#24837B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#24837B</small>|<div style="background-color:#1C6C66">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1C6C66</small>|<div style="background-color:#164F4A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#164F4A</small>|<div style="background-color:#143F3C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#143F3C</small>|<div style="background-color:#122F2C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#122F2C</small>|<div style="background-color:#101F1D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#101F1D</small>||
+|<b>blue</b>||<div style="background-color:#E1ECEB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E1ECEB</small>|<div style="background-color:#C6DDE8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C6DDE8</small>|<div style="background-color:#ABCFE2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#ABCFE2</small>|<div style="background-color:#92BFDB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#92BFDB</small>|<div style="background-color:#66A0C8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#66A0C8</small>|<div style="background-color:#4385BE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4385BE</small>|<div style="background-color:#3171B2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3171B2</small>|<div style="background-color:#205EA6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#205EA6</small>|<div style="background-color:#1A4F8C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A4F8C</small>|<div style="background-color:#163B66">⠶</div><small style="font-size:0.66rem;font-family:monospace">#163B66</small>|<div style="background-color:#133051">⠶</div><small style="font-size:0.66rem;font-family:monospace">#133051</small>|<div style="background-color:#12253B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#12253B</small>|<div style="background-color:#101A24">⠶</div><small style="font-size:0.66rem;font-family:monospace">#101A24</small>||
+|<b>purple</b>||<div style="background-color:#F0EAEC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F0EAEC</small>|<div style="background-color:#E2D9E9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E2D9E9</small>|<div style="background-color:#D3CAE6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D3CAE6</small>|<div style="background-color:#C4B9E0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C4B9E0</small>|<div style="background-color:#A699D0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A699D0</small>|<div style="background-color:#8B7EC8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#8B7EC8</small>|<div style="background-color:#735EB5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#735EB5</small>|<div style="background-color:#5E409D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#5E409D</small>|<div style="background-color:#4F3685">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4F3685</small>|<div style="background-color:#3C2A62">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3C2A62</small>|<div style="background-color:#31234E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#31234E</small>|<div style="background-color:#261C39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#261C39</small>|<div style="background-color:#1A1623">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A1623</small>||
+|<b>magenta</b>||<div style="background-color:#FEE4E5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FEE4E5</small>|<div style="background-color:#FCCFDA">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FCCFDA</small>|<div style="background-color:#F9B9CF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F9B9CF</small>|<div style="background-color:#F4A4C2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F4A4C2</small>|<div style="background-color:#E47DA8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E47DA8</small>|<div style="background-color:#CE5D97">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CE5D97</small>|<div style="background-color:#B74583">⠶</div><small style="font-size:0.66rem;font-family:monospace">#B74583</small>|<div style="background-color:#A02F6F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A02F6F</small>|<div style="background-color:#87285E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#87285E</small>|<div style="background-color:#641F46">⠶</div><small style="font-size:0.66rem;font-family:monospace">#641F46</small>|<div style="background-color:#4F1B39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4F1B39</small>|<div style="background-color:#39172B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#39172B</small>|<div style="background-color:#24131D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#24131D</small>||
+
+しかし現状では`#RRGGBBAA`書式のアルファチャンネル付き色設定ができないため、`_color.scss`を同梱しています。
+
+```scss
+@use '../node_modules/postcss-enumerates-in-line/_color.scss' as c;
+
+html {
+  color: #{c.$color-red-400}99; // D14D4199
+}
+```
+
+> 将来的には`color-alpha[[<color-theme>,<color-depth>,<alpha>,<optional:output-style>]]`関数の実装を予定しています。
+
+```scss
+/* 🚧Before */
+html {
+  color: color-alpha[[red,400,60%,oklch]];
+}
+
+/* 🚀After */
+html {
+  color: oklch(0.597 0.1692 28.38 / 60%);
+}
+```
 
 
 ### プロパティ名のショートハンド
@@ -496,7 +838,7 @@ PostCSS処理の配列の中に、`enumSpreader({})`関数を差し込みます�
 
 ```css
 :root {
-  --enums-color-gray-100: hsl(210 5% 10%);
+  --color-red-400: hsl(5 61% 53.7%);
 }
 ```
 
@@ -506,7 +848,7 @@ PostCSS処理の配列の中に、`enumSpreader({})`関数を差し込みます�
 
 ```css
 :root {
-  --enums-color-gray-100: #181a1b;
+  --color-red-400: #D14D41;
 }
 ```
 
@@ -514,7 +856,7 @@ PostCSS処理の配列の中に、`enumSpreader({})`関数を差し込みます�
 
 ```css
 :root {
-  --enums-color-gray-100: oklch(0.21 0.01 210);
+  --color-red-400: oklch(0.597 0.1692 28.38);
 }
 ```
 

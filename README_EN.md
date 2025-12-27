@@ -5,9 +5,23 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v0.0.1
+## Revision: in v0.2.0
 
-- Change connection a package loading from inner file-path to [npmjs.com](https://www.npmjs.com/).
+- Added conditional CSS property names about below.
+  + `hover!`
+  + `dark!`
+  + `mq(<mediaQueries>)!`
+  + `data(<customDataElements>)`
+- Changed default colors to [Flexoki].
+- Appended `_color.scss` file into this package.
+- Updated files as development samples, `test/gulp/` and `test/postcss/`.
+
+
+## Maybe add functions
+
+- Be able to define user generated shorthands.
+- Refine `[[...]]` syntax, and add to use `color-alpha[[...]]` syntax which is enable to add alpha channel to default colors (using in CSS property value).
+
 
 ---
 
@@ -38,11 +52,21 @@ Specific speaking, it takes the syntax like above -- language in [SCSS].
 > You would separate CSS styles by `:` character so, property name appears in before and property value appears in after against `:`.
 > Whitespace characters (like a ` `) treat as separator of CSS styles. If you want to write whitespaces at property values, then may replace these by `^` character.
 >
+
+~~There are no imprements about state transition like a hover, media queries, dark mode, etc.; because I am wishing only to aim for enumerating CSS styles.~~
+
+~~> What do I want to say; this plugin do not have any `hover:`, `md:`, and `dark:` etc. at [Tailwind CSS].~~
+
+☑️In version 0.2.0 and upper.
+
+And also if you prepend below syntaxes into CSS property, would be available about conditional CSS properties.
+
+- `hover!`: :hover
+- `dark!`: :root.dark
+- `mq(<mediaQueries>)!`: @media screen and &lt;mediaQueries&gt;
+- `data(<customDataElements>)!`: [data-&lt;customDataElement&gt;]
+
 > There are syntax descriptions after indexes.
-
-There are no imprements about state transition like a hover, media queries, dark mode, etc.; because I am wishing only to aim for enumerating CSS styles.
-
-> What do I want to say; this plugin do not have any `hover:`, `md:`, and `dark:` etc. at [Tailwind CSS].
 
 I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-API of the PostCSS.
 
@@ -51,6 +75,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 [SCSS]: https://sass-lang.com/
 [gulp]: https://gulpjs.com/
 [gulp-postcss]: https://github.com/postcss/gulp-postcss
+[Flexoki]: https://stephango.com/flexoki
 
 <div class="x--hr"></div>
 
@@ -58,14 +83,21 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v0.0.1](#revision-in-v001)
+  - [Revision: in v0.2.0](#revision-in-v020)
+  - [Maybe add functions](#maybe-add-functions)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
+    - [Conditional CSS property](#conditional-css-property)
+      - [Dark mode](#dark-mode)
+      - [Mouse over state](#mouse-over-state)
+      - [Media Queries](#media-queries)
+      - [Custom data attribute](#custom-data-attribute)
     - [Special characters](#special-characters)
       - [COLON Character](#colon-character)
       - [EXCLAMATION character](#exclamation-character)
       - [CIRCUMFLEX character](#circumflex-character)
       - [double SQUARE BRACKET character](#double-square-bracket-character)
+    - [Default colors](#default-colors)
     - [Shorthands of property names](#shorthands-of-property-names)
   - [How to use this plugin](#how-to-use-this-plugin)
     - [How to use with gulp](#how-to-use-with-gulp)
@@ -98,7 +130,7 @@ html {
   @enums background-color:#000 color:#fff;
 
   h1 {
-    @enums font-size:100%;
+    @enums font-size:100% hover!color:red;
   }
 }
 ```
@@ -112,6 +144,262 @@ You can enumerates multiple CSS styles with whitespace splitter which are "WHITE
 There are simplification at CSS style declarating too. That made by combination with "`property name`", "`:`", and "`property value`".
 
 You will be able to operate designation freely like a "`border:1px^#888^solid`", because property values can have arbitary value.
+
+
+### Conditional CSS property
+
+```scss
+h1 {
+  @emums data(visible="hidden")!display:none
+  ct:blue hover!ct:red
+  cb:white dark!cb:black
+  mq(width:1000px-)!mx:auto;
+}
+```
+
+You can extend a syntax to `<condition>!<CssPropertyName>:<CssPropertyValue>` like above.
+
+Each condition (`hover!`, `dark!`, `mq(...)!`, and `data(...)!`) are able to mate with others.
+
+```scss
+h1 {
+  @enums dark!hover!ct:red;
+}
+```
+
+But can you not prepend consecutively same conditional type about `mq(...)!` and `data(...)!`, because these are only able to add the 1 type by 1 CSS property.
+
+If you want to enumerate conditions, please use by `,` splitting that located between `(` and`)`.
+
+The case of there are designated consecutively same optional types, this plugin will be applying the only first one, and ignoring following others.
+
+```scss
+/* ❌️NG */
+h1 {
+  @enums mq(width:-640px)!mq(orientation:portrait)!m2:auto
+  data(state="succeed")!data(target-href^="https://")!text-indent:1rem;
+}
+
+/* ⭕️OK */
+h1 {
+  @enums mq(width:-640px,orientation:portrait)!m2:auto
+  data(state="succeed",target-href^="https://")!text-indent:1rem;
+}
+
+/* 🙂Unzip */
+@media screen and (max-width: 640px) and (orientation: portrait) {
+  h1 {
+    margin-bottom: auto;
+  }
+}
+h1[data-state="succeed"][data-target-href^="https://"] {
+  text-indent: 1rem;
+}
+```
+
+
+#### Dark mode
+
+Using `dark!` case that of conditional syntax, this plugin behave to judge whether does `root:` (html element) have a `dark` class?
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums cb:white dark!cb:black;
+}
+
+/* 🚀After */
+h1 {
+  background-color: white;
+}
+:root.dark h1 {
+  background-color: black;
+}
+```
+
+
+#### Mouse over state
+
+Using `hover!` case that of conditional syntax, this plugin behave to add `:hover` pseudo class.
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums ct:blue hover!ct:red;
+}
+
+/* 🚀After */
+h1 {
+  color: blue;
+}
+h1:hover {
+  color: red;
+}
+```
+
+
+#### Media Queries
+
+Using `mq(...)!` case that of conditional syntax, this plugin behave to insert into `@media` rules.
+
+If you wish to combine multiple media queries consecutively, can describe by `,` splitting syntax.
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums mq(width:1000px-)!m2:auto
+  mq(height:-1000px,aspect-ratio:1-)!p:1.5rem;
+}
+
+/* 🚀After */
+@media screen and (min-width: 1000px) {
+  h1 {
+    margin-bottom: auto;
+  }
+}
+@media screen and (max-height: 1000px) and (min-aspect-ratio: 1) {
+  h1 {
+    padding: 1.5rem;
+  }
+}
+```
+
+The media queries (which are as arguments of `mq(...)` function) can be described in these combination; `media feature`, `:`, `value of condition`.
+
+There are usable media features as a below, however this plugin will change outputting actual media feathres by what do you use any values of condition.
+
+- `orientation`: orientation
+- `width`: width, min-width, max-width
+- `height`: height, min-height, max-height
+- `aspect-ratio`: aspect-ratio, min-aspect-ratio, max-aspect-ratio
+
+> In `orientation` case; there is designatable value, `portrait` (long vertical or square shapes) or `landscape` (long horizontal shape) only.
+
+```scss
+body {
+  @enums
+  mq(orientation:portrait)!m2:1rem
+  mq(orientation:landscape)!m8:1rem
+  ;
+}
+```
+
+> In `width` case; there are 3 type of designatable value. `-<length>`, `<length>-<length>`, and `<length>-`.
+>
+> You will be able to designate to `<length>` as these numeric values, that is related to length which tied with CSS sizing units; `px`, `rem`, `vw`, etc.
+>
+> + In `-<length>` case (the syntax is `<length>` with `-` prefix) -- this plugin recognize it as "This media query is smaller than `<length>`". (Applied media feature is `max-width`.)
+> + In `<length>-<length>` case (the syntax is `-` sandwiching by 2 `<length>`) -- this plugin recognize it as "This media query still is range of between first `<length>` and second `<length>`". (Applied media feature are `min-width` and `max-width`.)
+> + In `<length>-` case (the syntax is `<length>` with `-` postfix) -- this plugin recognize it as "This media query is larger than `<length>`". (Applied media feature is `min-width`.)
+
+```scss
+body {
+  @enums
+  mq(width:-480px)!m2:1rem
+  mq(width:640px-1024px)!mx:1rem
+  mq(width:1280px)!m8:1rem
+  ;
+}
+```
+
+> In `height` case; there are designatable value of condition and behavior that is same as `width`.
+>
+> But applying media feature are changed to `height`, `min-height`, and `max-height`.
+
+```scss
+body {
+  @enums
+  mq(height:-480px)!m2:1rem
+  mq(height:640px-1024px)!mx:1rem
+  mq(height:1280px)!m8:1rem
+  ;
+}
+```
+
+> In `aspect-ratio` case; you can only designate a value in numeric which is integer (like a `1`) or float (like a `0.85`) type.
+>
+> Notice: Must NOT designate value with divide operator (`/`), by what you wish to transform it from `@media (aspect-ratio: 16/9)`. You should designate a calculated literal number. (e.g. 16/9 🔀 1.78)
+>
+> + In `-<number>` case (the syntax is `<number>` with `-` prefix) -- this plugin recognize it as "This aspect ratio is smaller than `<number>`". (Applied media feature is `max-aspect-ratio`.)
+> + In `<number>-<number>` case (the syntax is `-` sandwiching by 2 `<number>`) -- this plugin recognize it as "This aspect ratio stillis range of between first `<number>` and second `<number>`". (Applied media feature are `min-aspect-ratio` and `max-aspect-ratio`.)
+> + In `<number>-` case (the syntax is `<number>` with `-` postfix) -- this plugin recognize it as "This aspect ratio is largeer than `<number>`". (Applied media feature is `min-aspect-ratio`.)
+> + In `<number>` case (the syntax only is `<number>` and without any `-`) -- this plugin recognize it as "This aspect ratio is as just equal as `<number>`". (Applied media feature is `aspect-ratio`.)
+
+```scss
+body {
+  @enums
+  mq(aspect-ratio:-0.5)!m2:1rem
+  mq(aspect-ratio:0.55-0.95)!mx:1rem
+  mq(aspect-ratio:1.25-)!m8:1rem
+  mq(aspect-ratio:1)!p:1rem
+  ;
+}
+```
+
+
+#### Custom data attribute
+
+Using `data(...)!` case that conditional syntax, this plugin behave to combine CSS selector and custom data attributes.
+
+If you wish to combine multiple custom data attributes consecutively, can describe by `,` splitting syntax.
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums data(visible="hidden")!display:none;
+}
+
+/* 🚀After */
+h1[data-visible="hidden"] {
+  display: none;
+}
+```
+
+The custom data attributes (which are as arguments of `data(...)` function) can be described in these combination; `attribute name`, `conditional operator`, `attribute value`.
+
+If do you need a attribute value (that means you want to need only attribute name like as `*[data-loading]`), should not designate `conditional operator` and `attribute value`,
+
+```scss
+/* 🚧Before */
+h1 {
+  @enums data(loading)!display:none
+  data(is-empty="false")!m8:1rem;
+}
+
+/* 🚀After */
+h1[data-loading] {
+  display: none;
+}
+h1[data-is-empty="false"] {
+  margin-top: 1rem;
+}
+```
+
+> At attribute name; designated value is only string which is following onto `data-`.
+>
+> Strictly speaking, there are available only `/[A-Za-z\d_\-]/` characters. But you cannot put `-` characters at first or last.
+
+> At conditional operator; there are usable kinds as a below.
+>
+> + `=`: The case of matching between designated value and custom data attributes absolutely. (e.g. `[data-foo="bar"]`)
+> + `~=`: The case of matching between one of designated value ([required] string must be space character separated style) and custom data attributes. (e.g. `[data-tags~="ipsum"]` vs. `<span data-tags="lorem ipsum dolor sit amet"></span>`)
+> + `^=`: The case of matching between designated value and custom data attributes starting with the same characters. (e.g. `[data-href^="https://"]`)
+> + `$=`: The case of matching between designated value and custom data attributes finishing with the same characters. (e.g. `[data-href$=".webp"]`)
+> + `*=`: The case of matching between designated value and custom data attributes including with the same characters. (e.g. `[data-alphabet*="bcdef"]`)
+> + `|=`: The case of matching between designated value and custom data attributes starting with the same characters, and string of custom data attribute followed `/-[A-Za-z]+/`. (e.g. `[data-lang|="en"]`)
+>
+> > This expression is offen used by tag of languages (like a `en-US`, `en-GB`) which based on ISO 639 + ISO 3166.
+
+> At attribute value; you need to sandwich a designated value by quote symbols (`"` or `'`).
+>
+> Please notice if you want to handle quote symbol characters in custom data attributes.
+>
+> And saying, this plugin transform at percent encoding (%xx) against below characters in attribute value by internal processing.
+> + `%`: %25
+> + `"`: %22
+> + `'`: %27
+> + `｀`: %60
+> + `\`: %5D
 
 
 ### Special characters
@@ -132,6 +420,7 @@ Please transform to escape the characters by yourself -- `content:"\03A"`.
 
 When you postfix EXCLAMATION (`!`) character about property value, this plugin recognize "I ordered this property is declared `!important`". There is `padding-top:1rem`, then will be replaced to `padding-top: 1rem !important`.
 
+> Notice: This usage case of exclamation character (`!`) which behave as `!important` declaration is different to conditional syntax as `hover!`.
 
 #### CIRCUMFLEX character
 
@@ -173,12 +462,65 @@ You can describe as `width:calc[[100vw-(100%+2rem)*(2)+1rem]]` too to omit `^` c
 Because there ware annoying `^` characters they appear many and many times about `width:calc(100vw^-^(100%^+^2rem)^*^2^+^1rem)`, that is not visibility at good.
 
 > Please must you not use `[[` and `]]` characters about non-mathematical functions like `var()`.
-> 
+>
 > Cause for example; `var[[--foo-bar]]` will be wrongly replacing to `var(--foo - var)`. That is destructed and meaningless property value of CSS.
 
 This is experimental function. I am improving a transform compiler, so you will face at risk that would not insert whitespace characters to both end of calculation operators normally at your wish.
 
 It works to replace whitespace to `^` characters as this case too. But I recommend to take a surefire way, it is supplements by `^` characters manually without `[[` and `]]`.
+
+
+### Default colors
+
+Default colors forked from [Flexoki] v2.0 to this package.
+
+If you want to use it, call a CSS variable from CSS `var()` function.
+
+```scss
+body {
+  @enums ct:var(--color-red-400);
+}
+```
+
+||0|50|100|150|200|300|400|500|600|700|800|850|900|950|999|
+|--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+|<b>black</b>|<div style="background-color:#100F0F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#100F0F</small>||||||||||||||<div style="background-color:#000000">⠶</div><small style="font-size:0.66rem;font-family:monospace">#000000</small>|
+|<b>white</b>|<div style="background-color:#FFFCF0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFFCF0</small>||||||||||||||<div style="background-color:#FFFFFF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFFFFF</small>|
+|<b>base</b>||<div style="background-color:#F2F0E5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F2F0E5</small>|<div style="background-color:#E6E4D9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E6E4D9</small>|<div style="background-color:#DAD8CE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DAD8CE</small>|<div style="background-color:#CECDC3">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CECDC3</small>|<div style="background-color:#B7B5AC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#B7B5AC</small>|<div style="background-color:#9F9D96">⠶</div><small style="font-size:0.66rem;font-family:monospace">#9F9D96</small>|<div style="background-color:#878580">⠶</div><small style="font-size:0.66rem;font-family:monospace">#878580</small>|<div style="background-color:#6F6E69">⠶</div><small style="font-size:0.66rem;font-family:monospace">#6F6E69</small>|<div style="background-color:#575653">⠶</div><small style="font-size:0.66rem;font-family:monospace">#575653</small>|<div style="background-color:#403E3C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#403E3C</small>|<div style="background-color:#343331">⠶</div><small style="font-size:0.66rem;font-family:monospace">#343331</small>|<div style="background-color:#282726">⠶</div><small style="font-size:0.66rem;font-family:monospace">#282726</small>|<div style="background-color:#1C1B1A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1C1B1A</small>||
+|<b>red</b>||<div style="background-color:#FFE1D5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFE1D5</small>|<div style="background-color:#FFCABB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFCABB</small>|<div style="background-color:#FDB2A2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FDB2A2</small>|<div style="background-color:#F89A8A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F89A8A</small>|<div style="background-color:#E8705F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E8705F</small>|<div style="background-color:#D14D41">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D14D41</small>|<div style="background-color:#C03E35">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C03E35</small>|<div style="background-color:#AF3029">⠶</div><small style="font-size:0.66rem;font-family:monospace">#AF3029</small>|<div style="background-color:#942822">⠶</div><small style="font-size:0.66rem;font-family:monospace">#942822</small>|<div style="background-color:#6C201C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#6C201C</small>|<div style="background-color:#551B18">⠶</div><small style="font-size:0.66rem;font-family:monospace">#551B18</small>|<div style="background-color:#3E1715">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3E1715</small>|<div style="background-color:#261312">⠶</div><small style="font-size:0.66rem;font-family:monospace">#261312</small>||
+|<b>orange</b>||<div style="background-color:#FFE7CE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FFE7CE</small>|<div style="background-color:#FED3AF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FED3AF</small>|<div style="background-color:#FCC192">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FCC192</small>|<div style="background-color:#F9AE77">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F9AE77</small>|<div style="background-color:#EC8B49">⠶</div><small style="font-size:0.66rem;font-family:monospace">#EC8B49</small>|<div style="background-color:#DA702C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DA702C</small>|<div style="background-color:#CB6120">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CB6120</small>|<div style="background-color:#BC5215">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BC5215</small>|<div style="background-color:#9D4310">⠶</div><small style="font-size:0.66rem;font-family:monospace">#9D4310</small>|<div style="background-color:#71320D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#71320D</small>|<div style="background-color:#59290D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#59290D</small>|<div style="background-color:#40200D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#40200D</small>|<div style="background-color:#27180E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#27180E</small>||
+|<b>yellow</b>||<div style="background-color:#FAEEC6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FAEEC6</small>|<div style="background-color:#F6E2A0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F6E2A0</small>|<div style="background-color:#F1D67E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F1D67E</small>|<div style="background-color:#ECCB60">⠶</div><small style="font-size:0.66rem;font-family:monospace">#ECCB60</small>|<div style="background-color:#DFB431">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DFB431</small>|<div style="background-color:#D0A215">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D0A215</small>|<div style="background-color:#BE9207">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BE9207</small>|<div style="background-color:#AD8301">⠶</div><small style="font-size:0.66rem;font-family:monospace">#AD8301</small>|<div style="background-color:#8E6B01">⠶</div><small style="font-size:0.66rem;font-family:monospace">#8E6B01</small>|<div style="background-color:#664D01">⠶</div><small style="font-size:0.66rem;font-family:monospace">#664D01</small>|<div style="background-color:#503D02">⠶</div><small style="font-size:0.66rem;font-family:monospace">#503D02</small>|<div style="background-color:#3A2D04">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3A2D04</small>|<div style="background-color:#241E08">⠶</div><small style="font-size:0.66rem;font-family:monospace">#241E08</small>||
+|<b>green</b>||<div style="background-color:#EDEECF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#EDEECF</small>|<div style="background-color:#DDE2B2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DDE2B2</small>|<div style="background-color:#CDD597">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CDD597</small>|<div style="background-color:#BEC97E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BEC97E</small>|<div style="background-color:#A0AF54">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A0AF54</small>|<div style="background-color:#879A39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#879A39</small>|<div style="background-color:#768D21">⠶</div><small style="font-size:0.66rem;font-family:monospace">#768D21</small>|<div style="background-color:#66800B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#66800B</small>|<div style="background-color:#536907">⠶</div><small style="font-size:0.66rem;font-family:monospace">#536907</small>|<div style="background-color:#3D4C07">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3D4C07</small>|<div style="background-color:#313D07">⠶</div><small style="font-size:0.66rem;font-family:monospace">#313D07</small>|<div style="background-color:#252D09">⠶</div><small style="font-size:0.66rem;font-family:monospace">#252D09</small>|<div style="background-color:#1A1E0C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A1E0C</small>||
+|<b>cyan</b>||<div style="background-color:#DDF1E4">⠶</div><small style="font-size:0.66rem;font-family:monospace">#DDF1E4</small>|<div style="background-color:#BFE8D9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#BFE8D9</small>|<div style="background-color:#A2DECE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A2DECE</small>|<div style="background-color:#87D3C3">⠶</div><small style="font-size:0.66rem;font-family:monospace">#87D3C3</small>|<div style="background-color:#5ABDAC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#5ABDAC</small>|<div style="background-color:#3AA99F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3AA99F</small>|<div style="background-color:#2F968D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#2F968D</small>|<div style="background-color:#24837B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#24837B</small>|<div style="background-color:#1C6C66">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1C6C66</small>|<div style="background-color:#164F4A">⠶</div><small style="font-size:0.66rem;font-family:monospace">#164F4A</small>|<div style="background-color:#143F3C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#143F3C</small>|<div style="background-color:#122F2C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#122F2C</small>|<div style="background-color:#101F1D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#101F1D</small>||
+|<b>blue</b>||<div style="background-color:#E1ECEB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E1ECEB</small>|<div style="background-color:#C6DDE8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C6DDE8</small>|<div style="background-color:#ABCFE2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#ABCFE2</small>|<div style="background-color:#92BFDB">⠶</div><small style="font-size:0.66rem;font-family:monospace">#92BFDB</small>|<div style="background-color:#66A0C8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#66A0C8</small>|<div style="background-color:#4385BE">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4385BE</small>|<div style="background-color:#3171B2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3171B2</small>|<div style="background-color:#205EA6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#205EA6</small>|<div style="background-color:#1A4F8C">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A4F8C</small>|<div style="background-color:#163B66">⠶</div><small style="font-size:0.66rem;font-family:monospace">#163B66</small>|<div style="background-color:#133051">⠶</div><small style="font-size:0.66rem;font-family:monospace">#133051</small>|<div style="background-color:#12253B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#12253B</small>|<div style="background-color:#101A24">⠶</div><small style="font-size:0.66rem;font-family:monospace">#101A24</small>||
+|<b>purple</b>||<div style="background-color:#F0EAEC">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F0EAEC</small>|<div style="background-color:#E2D9E9">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E2D9E9</small>|<div style="background-color:#D3CAE6">⠶</div><small style="font-size:0.66rem;font-family:monospace">#D3CAE6</small>|<div style="background-color:#C4B9E0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#C4B9E0</small>|<div style="background-color:#A699D0">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A699D0</small>|<div style="background-color:#8B7EC8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#8B7EC8</small>|<div style="background-color:#735EB5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#735EB5</small>|<div style="background-color:#5E409D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#5E409D</small>|<div style="background-color:#4F3685">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4F3685</small>|<div style="background-color:#3C2A62">⠶</div><small style="font-size:0.66rem;font-family:monospace">#3C2A62</small>|<div style="background-color:#31234E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#31234E</small>|<div style="background-color:#261C39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#261C39</small>|<div style="background-color:#1A1623">⠶</div><small style="font-size:0.66rem;font-family:monospace">#1A1623</small>||
+|<b>magenta</b>||<div style="background-color:#FEE4E5">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FEE4E5</small>|<div style="background-color:#FCCFDA">⠶</div><small style="font-size:0.66rem;font-family:monospace">#FCCFDA</small>|<div style="background-color:#F9B9CF">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F9B9CF</small>|<div style="background-color:#F4A4C2">⠶</div><small style="font-size:0.66rem;font-family:monospace">#F4A4C2</small>|<div style="background-color:#E47DA8">⠶</div><small style="font-size:0.66rem;font-family:monospace">#E47DA8</small>|<div style="background-color:#CE5D97">⠶</div><small style="font-size:0.66rem;font-family:monospace">#CE5D97</small>|<div style="background-color:#B74583">⠶</div><small style="font-size:0.66rem;font-family:monospace">#B74583</small>|<div style="background-color:#A02F6F">⠶</div><small style="font-size:0.66rem;font-family:monospace">#A02F6F</small>|<div style="background-color:#87285E">⠶</div><small style="font-size:0.66rem;font-family:monospace">#87285E</small>|<div style="background-color:#641F46">⠶</div><small style="font-size:0.66rem;font-family:monospace">#641F46</small>|<div style="background-color:#4F1B39">⠶</div><small style="font-size:0.66rem;font-family:monospace">#4F1B39</small>|<div style="background-color:#39172B">⠶</div><small style="font-size:0.66rem;font-family:monospace">#39172B</small>|<div style="background-color:#24131D">⠶</div><small style="font-size:0.66rem;font-family:monospace">#24131D</small>||
+
+But currently you cannot use a CSS color settings with alpha channel which styles as `#RRGGBBAA`.
+
+So this packages includes `_color.scss` file.
+
+```scss
+@use '../node_modules/postcss-enumerates-in-line/_color.scss' as c;
+
+html {
+  color: #{c.$color-red-400}99; // D14D4199
+}
+```
+
+> I will implement `color-alpha[[<color-theme>,<color-depth>,<alpha>,<optional:output-style>]]` function futurity.
+
+```scss
+/* 🚧Before */
+html {
+  color: color-alpha[[red,400,60%,oklch]];
+}
+
+/* 🚀After */
+html {
+  color: oklch(0.597 0.1692 28.38 / 60%);
+}
+```
 
 
 ### Shorthands of property names
@@ -495,7 +837,7 @@ If you designate to `true` (either nothing to designate, or designate `"hsl"` in
 
 ```css
 :root {
-  --enums-color-gray-100: hsl(210 5% 10%);
+  --color-red-400: hsl(5 61% 53.7%);
 }
 ```
 
@@ -505,7 +847,7 @@ You want to output by RGB type (without default HSL type), may designate `"rgb"`
 
 ```css
 :root {
-  --enums-color-gray-100: #181a1b;
+  --color-red-400: #D14D41;
 }
 ```
 
@@ -513,7 +855,7 @@ Or want to output by OKLCH type, may designate `"oklch"` or `"OKLCH"`.
 
 ```css
 :root {
-  --enums-color-gray-100: oklch(0.21 0.01 210);
+  --color-red-400: oklch(0.597 0.1692 28.38);
 }
 ```
 

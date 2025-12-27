@@ -14,8 +14,8 @@ import * as dartSass from 'sass'
 import postcss from 'postcss'
 import autoprefixer from 'autoprefixer'
 import csso from 'postcss-csso'
-import { enumSpreader } from 'postcss-enumerates-in-line'
-//import { enumSpreader } from '../../index.mjs'
+//import { enumSpreader } from 'postcss-enumerates-in-line'
+import { enumSpreader } from '../../index.mjs'
 
 
 /**
