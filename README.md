@@ -5,7 +5,7 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## 更新点: v0.3.1
+## 更新点: v0.3.2
 
 - 以下の条件付きCSSプロパティを追加
   + `hover!`
@@ -87,7 +87,7 @@
 ## 目次
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [更新点: v0.3.1](#更新点-v031)
+  - [更新点: v0.3.2](#更新点-v032)
   - [実装予定](#実装予定)
   - [目次](#目次)
   - [CSSでの記述方法](#cssでの記述方法)
