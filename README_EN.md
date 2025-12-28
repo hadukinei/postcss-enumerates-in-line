@@ -5,7 +5,7 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v0.3.0
+## Revision: in v0.3.1
 
 - Added conditional CSS property names about below.
   + `hover!`
@@ -20,6 +20,7 @@
 
 ## Maybe add functions
 
+- Add new conditional CSS property: `attr(<attributes>)!`.
 - Be able to define user generated shorthands.
 - Refine `[[...]]` syntax, and add to use `color-alpha[[...]]` syntax which is enable to add alpha channel to default colors (using in CSS property value).
 
@@ -85,7 +86,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v0.3.0](#revision-in-v030)
+  - [Revision: in v0.3.1](#revision-in-v031)
   - [Maybe add functions](#maybe-add-functions)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
