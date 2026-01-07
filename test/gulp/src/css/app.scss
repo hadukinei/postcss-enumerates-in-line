@@ -35,12 +35,13 @@
 
     &--item {
       &::before {
-        @enums display:inline content:"\0bb\020" ct:var(--color-base-600);
+        @enums display:inline content:"\0bb\020" ct:color[[base,600]];
       }
 
       &--anchor {
-        @enums text-decoration:var(--color-magenta-300)^underline^dotted^2px text-underline-offset:4px transition:text-decoration-color^0.25s^ease,color^0.25s^ease
-        hover!ct:var(--color-magenta-500) hover!text-decoration-color:#fff0;
+        @enums fd:color[[magenta,300]]^underline^dotted^2px fdo:4px
+        transition:text-decoration-color^0.25s^ease,color^0.25s^ease
+        hover!ct:color[[magenta,500]] hover!fdc:color[[white,999,0%]];
       }
     }
   }
@@ -60,19 +61,21 @@
 }
 
 .c-projects {
-  @enums display:grid grid-template-columns:repeat(auto-fit,minmax(260px,1fr)) gap:1rem^1.5rem m8:0.375rem;
+  @enums display:grid gtc:repeat(auto-fit,minmax(260px,1fr)) gap:1rem^1.5rem m8:0.375rem;
 
   &--item {
-    @enums display:grid gap:0.5rem px:1rem py:0.5rem bw:1px bc:var(--color-base-400) br:0.75rem transition:transform^0.25s^ease,box-shadow^0.25s^ease,border-color^0.25s^ease,background-color^0.25s^ease
-    hover!transform:translateY(-0.25rem) hover!box-shadow:0^0.5rem^1rem^#0004 hover!bc:var(--color-magenta-300) hover!cb:var(--color-magenta-50);
+    @enums display:grid gap:0.5rem px:1rem py:0.5rem bw:1px bc:color[[base,400]] br:0.75rem
+    transition:transform^0.25s^ease,box-shadow^0.25s^ease,border-color^0.25s^ease,background-color^0.25s^ease
+    hover!transform:translateY(-0.25rem) hover!box-shadow:0^0.5rem^1rem^color[[black,999,25%]] hover!bc:color[[magenta,300]] hover!cb:color[[magenta,50]];
 
     &--description {
       @enums fs:0.95em;
     }
 
     &--anchor {
-      @enums text-decoration:var(--color-magenta-300)^underline^dotted^2px text-underline-offset:4px transition:text-decoration-color^0.25s^ease,color^0.25s^ease
-      hover!ct:var(--color-magenta-500) hover!text-decoration-color:#fff0;
+      @enums fd:color[[magenta,300]]^underline^dotted^2px fdo:4px
+      transition:text-decoration-color^0.25s^ease,color^0.25s^ease
+      hover!ct:color[[magenta,500]] hover!fdc:color[[white,999,0%]];
     }
   }
 }
@@ -84,12 +87,13 @@
     @enums display:grid gap:1rem;
 
     &--input {
-      @enums px:0.5rem py:0.375rem br:0.5rem cb:var(--color-base-50) ct:var(--color-base-950) fs:1rem;
+      @enums px:0.5rem py:0.375rem br:0.5rem cb:color[[base,50]] ct:color[[base,950]] fs:1rem;
     }
 
     &--button {
-      @enums py:0.5rem br:0.5rem cb:var(--color-magenta-300) ct:var(--color-base-950) fs:1rem cursor:pointer transition:background-color^0.25s^ease,color^0.25s^ease
-      hover!cb:#fff hover!ct:var(--color-magenta-500);
+      @enums py:0.5rem br:0.5rem cb:color[[magenta,300]] ct:color[[base,950]] fs:1rem cursor:pointer
+      transition:background-color^0.25s^ease,color^0.25s^ease
+      hover!cb:color[[white,999]] hover!ct:color[[magenta,500]];
     }
   }
 }

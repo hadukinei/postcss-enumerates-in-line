@@ -5,7 +5,12 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v0.4.0
+## Revision: in v1.0.0
+
+0. About package
+
+- Update sample programs.
+- Upgrade major version to v1.
 
 1. Color settings
 
@@ -24,9 +29,6 @@
 
 
 ## Maybe add functions
-
-- Update sample programs.
-- Upgrade major version to v1.
 
 
 ---
@@ -86,7 +88,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v0.4.0](#revision-in-v040)
+  - [Revision: in v1.0.0](#revision-in-v100)
   - [Maybe add functions](#maybe-add-functions)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
@@ -781,6 +783,8 @@ You will designate a blank object at a function of this package, if want to use 
 
 Or not want, might add option settings in the object.
 
+> In sample program, there is a optional setting about appending user defined shorthands.
+
 The detail of settings to know, refer to [Arguments of option settings](#arguments-of-option-settings).
 
 
@@ -893,6 +897,8 @@ Insert a function of `enumSpreader({})` into array of PostCSS execution.
 You will designate a blank object at a function of this package, if want to use by default settings.
 
 Or not want, might add option settings in the object.
+
+> In sample program, there is a optional setting about appending user defined shorthands.
 
 The detail of settings to know, refer to [Arguments of option settings](#arguments-of-option-settings).
 

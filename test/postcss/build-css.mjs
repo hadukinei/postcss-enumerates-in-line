@@ -40,6 +40,12 @@ const task = async () => {
       enumSpreader({
         //prependDefaultColor: 'rgb',
         //prependDefaultStyle: false,
+        appendShorthand: [
+          ['gtc', ['grid-template-columns']],
+          ['fd', ['text-decoration']],
+          ['fdc', ['text-decoration-color']],
+          ['fdo', ['text-underline-offset']],
+        ],
       }),
       autoprefixer(),
       csso(),
