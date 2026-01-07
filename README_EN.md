@@ -5,30 +5,9 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v1.0.0
+## Revision: in v1.1.0
 
-0. About package
-
-- Update sample programs.
-- Upgrade major version to v1.
-
-1. Color settings
-
-- Added a function `color[[...]]` for value of CSS property which designate a color.
-- Added a plugin's option `appendUserColors(...)` for extending user color themes.
-- Changed a plugin's option `prependDefaultColor` that default value turn to `false`.
-
-2. Shorthand settings
-
-- Added a plugin's option `appendShorthand(...)` for extending user shorthands which is used about CSS property name.
-
-3. CSS property
-
-- Added conditional CSS property name about below.
-  + `attr(<attributes>)`
-
-
-## Maybe add functions
+- When `color[[...]]` didn't lead any arguments, this package transform it to `#0000`.
 
 
 ---
@@ -88,8 +67,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v1.0.0](#revision-in-v100)
-  - [Maybe add functions](#maybe-add-functions)
+  - [Revision: in v1.1.0](#revision-in-v110)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
     - [Conditional CSS property](#conditional-css-property)
@@ -584,6 +562,8 @@ This function-like syntax takes 4 kind arguments in maximum.
 > 2. `400`
 > 3. `100%`
 > 4. `hsl`
+
+> And also if `color[[...]]` leads no arguments like a `color[[]]`, this package transform it to `#0000` as error handling.
 
 You will eliminate some problems as below if use this function.
 - Can apply opacity.
@@ -1085,6 +1065,8 @@ Color theme (e.g. `red`), intensity level (e.g. `400`), alpha value (e.g. `100%`
 Every kinds are optional arguments, so there are omittable.
 
 But, by and for syntax restriction, you need to designate arguments at least 1 kind and up.
+
+And also if there are no arguments like a `color[[]]`, this package transform it to `#0000` as error handling.
 
 > 1. Color theme
 >

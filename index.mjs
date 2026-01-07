@@ -482,6 +482,7 @@ const replaceCssPropertyValueWBracket = value => value.replace(/\^/g, ' ')
 .replace(/\[\[([^}]+)\]\]/g,(_,expr)=>`[[${expr.replace(/([+\*/]|(?<=[0-9a-zA-Z\)])[-%](?=[0-9a-zA-Z\(]))/g,' $1 ')}]]`)
 .replace('[[', '(')
 .replace(']]', ')')
+.replace('color()', '#0000')
 .replace(/ +/g, ' ')
 
 /**
