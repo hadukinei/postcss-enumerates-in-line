@@ -16,8 +16,10 @@ import postcss from 'postcss'
 const pluginName = 'PostCSS Enumerates in Line'
 
 const defaultOptions = {
-  prependDefaultColor: true,
+  prependDefaultColor: false,
   prependDefaultStyle: true,
+  appendUserColor: [],
+  appendShorthand: [],
 }
 
 let defaultStyle = [
@@ -49,8 +51,8 @@ let defaultStyle = [
 ]
 defaultStyle.reverse()
 
-const defaultColorNames = ['black', 'white', 'base', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'magenta']
-const defaultColorDefines = {
+let defaultColorNames = ['black', 'white', 'base', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'magenta']
+let defaultColorDefines = {
   rgb: {
     black:   [[0, '#100F0F'], [999, '#000000']],
     white:   [[0, '#FFFCF0'], [999, '#FFFFFF']],
@@ -92,18 +94,38 @@ const defaultColorDefines = {
   },
 }
 
+let defaultShorthands = [
+  'm', 'm8', 'm6', 'm2', 'm4', 'mx', 'my',
+  'p', 'p8', 'p6', 'p2', 'p4', 'px', 'py',
+  'o', 'o8', 'o6', 'o2', 'o4', 'ox', 'oy',
+  'bw', 'bw8', 'bw6', 'bw2', 'bw4', 'bwx', 'bwy',
+  'bs', 'bs8', 'bs6', 'bs2', 'bs4', 'bsx', 'bsy',
+  'bc', 'bc8', 'bc6', 'bc2', 'bc4', 'bcx', 'bcy',
+  'br', 'br7', 'br9', 'br3', 'br1',
+  'ct', 'cb',
+  'i', 'i8', 'i6', 'i2', 'i4',
+  'w', 'wmin', 'wmax', 'h', 'hmin', 'hmax',
+  'gx', 'g4', 'g6', 'gy', 'g8', 'g2',
+  'ff', 'fs', 'fw', 'fh',
+]
+let appendShorthandsIndex = []
+let appendShorthandsData = {}
+
 
 /**
  * PostCSS plugin: PostCSS Enumerates in Line
  * @param {EnumsEnumeratesInLineOptions|object} options - Output options.
- * @param {boolean|string} options.prependDefaultColor - Enable to print default CSS colors which explains like a `--enums-color-red-900: #f00;`.
+ * @param {boolean|string} options.prependDefaultColor - Enable to print default CSS colors which explains like a `--color-black-999: #000000;`.
  * @param {boolean|string[]} options.prependDefaultStyle - Enable to print default CSS styles.
+ * @param {UserColor[]} options.appendUserColor - Append user color settings to default color.
  * @description This plugin extend to multiple CSSes from shrinked it which described in 1 line like `@apply` syntax of TailwindCSS.
  */
 export const enumSpreader = (options = {}) => {
   let {
     prependDefaultColor,
     prependDefaultStyle,
+    appendUserColor,
+    appendShorthand,
   } = {...defaultOptions, ...options}
 
   if(prependDefaultColor === false) {
@@ -122,6 +144,9 @@ export const enumSpreader = (options = {}) => {
     prependDefaultStyle = false
   }
 
+  appendUserColors(appendUserColor)
+  appendUserShorthands(appendShorthand)
+
   return {
     postcssPlugin: pluginName,
     Once: root => {
@@ -136,6 +161,7 @@ export const enumSpreader = (options = {}) => {
                 isMq: '',
                 isData: '',
                 isAria: '',
+                isAttr: '',
                 important: '',
                 prop: '',
                 value: '',
@@ -245,11 +271,11 @@ export const enumSpreader = (options = {}) => {
               if(/data\(.+?\)!/.test(param[i])) {
                 setting.isData = []
                 ;(!!param[i].match(/data\((.+?)\)!/)[1] ? param[i].match(/data\((.+?)\)!/)[1] : '').split(',').forEach(q => {
-                  let v1 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]?[A-Za-z\d_])?)([\~\|\^\$\*]?=)['"](.*)['"]$/)
+                  let v1 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)([\~\|\^\$\*]?=)['"](.*)['"]$/)
                   if(!!v1) {
                     setting.isData.push(`[data-${v1[1]}${v1[2]}"${v1[3].replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
                   } else {
-                    let v2 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]?[A-Za-z\d_])?)$/)
+                    let v2 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)$/)
                     if(!!v2) {
                       setting.isData.push(`[data-${v2[1]}]`)
                     }
@@ -271,14 +297,31 @@ export const enumSpreader = (options = {}) => {
                 param[i] = param[i].replace(/aria\(.+?\)!/g, '')
               }
 
-              if(setting.isHover || setting.isDark || (setting.isMq !== '') || (setting.isData !== '') || (setting.isAria !== '')) {
+              if(/attr\(.+?\)!/.test(param[i])) {
+                setting.isAttr = []
+                ;(!!param[i].match(/attr\((.+?)\)!/)[1] ? param[i].match(/attr\((.+?)\)!/)[1] : '').split(',').forEach(q => {
+                  let v1 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)([\~\|\^\$\*]?=)['"](.*)['"]$/)
+                  if(!!v1) {
+                    setting.isAttr.push(`[${v1[1]}${v1[2]}"${v1[3].replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
+                  } else {
+                    let v2 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)$/)
+                    if(!!v2) {
+                      setting.isAttr.push(`[${v2[1]}]`)
+                    }
+                  }
+                })
+                setting.isAttr = setting.isAttr.join('')
+                param[i] = param[i].replace(/attr\(.+?\)!/g, '')
+              }
+
+              if(setting.isHover || setting.isDark || (setting.isMq !== '') || (setting.isData !== '') || (setting.isAria !== '') || (setting.isAttr !== '')) {
                 let regex = param[i].match(/^([\d\-a-z]+):([^!\s]+)(!)?$/)
                 setting.important = (!!regex[3]) ? ' !important' : ''
-                setting.prop = expandShortcut(regex[1])
+                setting.prop = expandShorthand(regex[1])
                 setting.value = replaceCssPropertyValueWBracket(regex[2])
 
                 for(let j = 0, m = setting.prop.length; j < m; j ++) {
-                  const css = `${setting.isMq !== '' ? '@media screen and ' + setting.isMq + ' { ' : ''}${setting.isDark ? ':root.dark ' : ''}${rule.selector}${setting.isData}${setting.isAria}${setting.isHover ? ':hover' : ''}{${setting.prop[j]}: ${setting.value}}${setting.isMq !== '' ? ' }' : ''}`
+                  const css = `${setting.isMq !== '' ? '@media screen and ' + setting.isMq + ' { ' : ''}${setting.isDark ? ':root.dark ' : ''}${rule.selector}${setting.isData}${setting.isAria}${setting.isAttr}${setting.isHover ? ':hover' : ''}{${setting.prop[j]}: ${setting.value}}${setting.isMq !== '' ? ' }' : ''}`
                   rule.after(css)
                 }
               } else if(/^([\d\-a-z]+):([^!\s]+)(!)?$/.test(param[i])) {
@@ -286,7 +329,7 @@ export const enumSpreader = (options = {}) => {
                 setting.important = (!!regex[3]) ? ' !important' : ''
                 setting.value = replaceCssPropertyValueWBracket(regex[2])
 
-                for(let prop = expandShortcut(regex[1]), j = 0, m = prop.length; j < m; j ++) {
+                for(let prop = expandShorthand(regex[1]), j = 0, m = prop.length; j < m; j ++) {
                   node.after(`${prop[j]}: ${setting.value}${setting.important};`)
                 }
               }
@@ -321,115 +364,234 @@ export const enumSpreader = (options = {}) => {
 }
 
 
+/**
+ * Append user color settings
+ * @param {UserColor[]} auc - User color settings.
+ */
+const appendUserColors = auc => {
+  for(let i = 0, l = auc.length; i < l; i ++) {
+    // check data
+    if(!auc[i].hasOwnProperty('theme')) continue
+    if(!auc[i].hasOwnProperty('levels')) continue
+    if(defaultColorNames.indexOf(auc[i].theme) >= 0) continue
+    let flg = false
+    for(let j = 0, m = auc[i].levels.length; j < m; j ++) {
+      if(
+        !auc[i].levels[j].hasOwnProperty('level')
+        || !auc[i].levels[j].hasOwnProperty('rgb')
+        || !auc[i].levels[j].hasOwnProperty('hsl')
+        || !auc[i].levels[j].hasOwnProperty('oklch')
+      ) {
+        flg = true
+        break
+      }
+    }
+    if(flg) continue
+
+    // push data
+    defaultColorNames.push(auc[i].theme)
+    if(!defaultColorDefines.rgb[auc[i].theme]) defaultColorDefines.rgb[auc[i].theme] = []
+    if(!defaultColorDefines.hsl[auc[i].theme]) defaultColorDefines.hsl[auc[i].theme] = []
+    if(!defaultColorDefines.oklch[auc[i].theme]) defaultColorDefines.oklch[auc[i].theme] = []
+    for(let j = 0, m = auc[i].levels.length; j < m; j ++) {
+      defaultColorDefines.rgb[auc[i].theme].push([auc[i].levels[j].level, auc[i].levels[j].rgb])
+      defaultColorDefines.hsl[auc[i].theme].push([auc[i].levels[j].level, auc[i].levels[j].hsl])
+      defaultColorDefines.oklch[auc[i].theme].push([auc[i].levels[j].level, auc[i].levels[j].oklch])
+    }
+  }
+
+  // to unique data
+  for(let i = 0, l = defaultColorNames.length; i < l; i ++) {
+    defaultColorDefines.rgb[defaultColorNames[i]] = Array.from(new Set(defaultColorDefines.rgb[defaultColorNames[i]].map(JSON.stringify)))
+    defaultColorDefines.hsl[defaultColorNames[i]] = Array.from(new Set(defaultColorDefines.hsl[defaultColorNames[i]].map(JSON.stringify)))
+    defaultColorDefines.oklch[defaultColorNames[i]] = Array.from(new Set(defaultColorDefines.oklch[defaultColorNames[i]].map(JSON.stringify)))
+    for(let j = 0, m = defaultColorDefines.rgb[defaultColorNames[i]].length; j < m; j ++) {
+      defaultColorDefines.rgb[defaultColorNames[i]][j] = JSON.parse(defaultColorDefines.rgb[defaultColorNames[i]][j])
+      defaultColorDefines.hsl[defaultColorNames[i]][j] = JSON.parse(defaultColorDefines.hsl[defaultColorNames[i]][j])
+      defaultColorDefines.oklch[defaultColorNames[i]][j] = JSON.parse(defaultColorDefines.oklch[defaultColorNames[i]][j])
+    }
+  }
+}
+
+/**
+ * Append user shorthand settings
+ * @param {Object{<string>,<string>[]}[]} aus - User shorthand settings.
+ */
+const appendUserShorthands = aus => {
+  for(let i = 0, l = aus.length; i < l; i ++) {
+    // check data
+    if(typeof aus[i] !== 'object') continue
+    if(aus[i].length !== 2) continue
+    if(typeof aus[i][1] !== 'object') continue
+    if((defaultShorthands.indexOf(aus[i][0]) === -1) && (appendShorthandsIndex.indexOf(aus[i][0]) === -1)) {
+      // push data
+      appendShorthandsIndex.push(aus[i][0])
+      appendShorthandsData[aus[i][0]] = aus[i][1]
+    }
+  }
+}
+
+/**
+ * Replace W SQUARE BRACKET syntax to available value in CSS property value
+ * @param {string} value - Designated value.
+ * @returns {string} Available value as CSS property.
+ */
 const replaceCssPropertyValueWBracket = value => value.replace(/\^/g, ' ')
+.replace(/color\[\[(.+?)\]\]/g,(_,expr) => {
+  const args = expr.split(',').reverse()
+  let opts = {
+    style: 'hsl',
+    color: 'base',
+    level: '400',
+    opacity: '100%',
+  }
+
+  for(let i = 0, l = args.length; i < l; i ++) {
+    if(/^[\d]+$/.test(args[i])) {
+      opts.level = args[i]
+    } else if(/^[\d]+[%]$/.test(args[i])) {
+      opts.opacity = args[i]
+    } else if(/^(rgb|hsl|oklch)$/i.test(args[i])) {
+      opts.style = args[i].toLowerCase()
+    } else if(defaultColorNames.includes(args[i])) {
+      opts.color = args[i]
+    } else {
+      return ''
+    }
+  }
+
+  let color = defaultColorDefines[opts.style][opts.color].filter(arr => arr[0] === parseInt(opts.level))
+  if(color.length !== 1) return ''
+  if(color[0].length !== 2) return ''
+  color = color[0][1]
+
+  switch(opts.style) {
+    case 'rgb':
+      color += Math.ceil(parseInt(opts.opacity)*2.55).toString(16).toUpperCase()
+      break;
+    case 'hsl':
+    case 'oklch':
+      color = color.replace(')', ` / ${opts.opacity})`)
+      break;
+    default:
+      break;
+  }
+
+  return color
+})
 .replace(/\[\[([^}]+)\]\]/g,(_,expr)=>`[[${expr.replace(/([+\*/]|(?<=[0-9a-zA-Z\)])[-%](?=[0-9a-zA-Z\(]))/g,' $1 ')}]]`)
 .replace('[[', '(')
 .replace(']]', ')')
 .replace(/ +/g, ' ')
 
 /**
- * Expand shortcut property name.
+ * Expand shorthand property name.
  * @param {String} prop - Specified property name.
  * @return {Array<String>} - Regular property name that defined in CSS.
- * @return {Array<String>} - If this function retrieved undefined shortcut property in this plugin, returns just it.
+ * @return {Array<String>} - If this function retrieved undefined shorthand property in this plugin, returns just it.
  */
-const expandShortcut = prop => {
+const expandShorthand = prop => {
   switch(prop) {
     // margin
-    case 'm': return ['margin'];
-    case 'm8': return ['margin-top'];
-    case 'm6': return ['margin-right'];
-    case 'm2': return ['margin-bottom'];
-    case 'm4': return ['margin-left'];
-    case 'mx': return ['margin-left', 'margin-right'];
-    case 'my': return ['margin-top', 'margin-bottom'];
+    case 'm': return ['margin']
+    case 'm8': return ['margin-top']
+    case 'm6': return ['margin-right']
+    case 'm2': return ['margin-bottom']
+    case 'm4': return ['margin-left']
+    case 'mx': return ['margin-left', 'margin-right']
+    case 'my': return ['margin-top', 'margin-bottom']
 
     // padding
-    case 'p': return ['padding'];
-    case 'p8': return ['padding-top'];
-    case 'p6': return ['padding-right'];
-    case 'p2': return ['padding-bottom'];
-    case 'p4': return ['padding-left'];
-    case 'px': return ['padding-left', 'padding-right'];
-    case 'py': return ['padding-top', 'padding-bottom'];
+    case 'p': return ['padding']
+    case 'p8': return ['padding-top']
+    case 'p6': return ['padding-right']
+    case 'p2': return ['padding-bottom']
+    case 'p4': return ['padding-left']
+    case 'px': return ['padding-left', 'padding-right']
+    case 'py': return ['padding-top', 'padding-bottom']
 
     // outline
-    case 'o': return ['outline'];
-    case 'o8': return ['outline-top'];
-    case 'o6': return ['outline-right'];
-    case 'o2': return ['outline-bottom'];
-    case 'o4': return ['outline-left'];
-    case 'ox': return ['outline-left', 'outline-right'];
-    case 'oy': return ['outline-top', 'outline-bottom'];
+    case 'o': return ['outline']
+    case 'o8': return ['outline-top']
+    case 'o6': return ['outline-right']
+    case 'o2': return ['outline-bottom']
+    case 'o4': return ['outline-left']
+    case 'ox': return ['outline-left', 'outline-right']
+    case 'oy': return ['outline-top', 'outline-bottom']
 
     // border-width
-    case 'bw': return ['border-width'];
-    case 'bw8': return ['border-top-width'];
-    case 'bw6': return ['border-right-width'];
-    case 'bw2': return ['border-bottom-width'];
-    case 'bw4': return ['border-left-width'];
-    case 'bwx': return ['border-left-width', 'border-right-width'];
-    case 'bwy': return ['border-top-width', 'border-bottom-width'];
+    case 'bw': return ['border-width']
+    case 'bw8': return ['border-top-width']
+    case 'bw6': return ['border-right-width']
+    case 'bw2': return ['border-bottom-width']
+    case 'bw4': return ['border-left-width']
+    case 'bwx': return ['border-left-width', 'border-right-width']
+    case 'bwy': return ['border-top-width', 'border-bottom-width']
 
     // border-style
-    case 'bs': return ['border-style'];
-    case 'bs8': return ['border-top-style'];
-    case 'bs6': return ['border-right-style'];
-    case 'bs2': return ['border-bottom-style'];
-    case 'bs4': return ['border-left-style'];
-    case 'bsx': return ['border-left-style', 'border-right-style'];
-    case 'bsy': return ['border-top-style', 'border-bottom-style'];
+    case 'bs': return ['border-style']
+    case 'bs8': return ['border-top-style']
+    case 'bs6': return ['border-right-style']
+    case 'bs2': return ['border-bottom-style']
+    case 'bs4': return ['border-left-style']
+    case 'bsx': return ['border-left-style', 'border-right-style']
+    case 'bsy': return ['border-top-style', 'border-bottom-style']
 
     // border-color
-    case 'bc': return ['border-color'];
-    case 'bc8': return ['border-top-color'];
-    case 'bc6': return ['border-right-color'];
-    case 'bc2': return ['border-bottom-color'];
-    case 'bc4': return ['border-left-color'];
-    case 'bcx': return ['border-left-color', 'border-right-color'];
-    case 'bcy': return ['border-top-color', 'border-bottom-color'];
+    case 'bc': return ['border-color']
+    case 'bc8': return ['border-top-color']
+    case 'bc6': return ['border-right-color']
+    case 'bc2': return ['border-bottom-color']
+    case 'bc4': return ['border-left-color']
+    case 'bcx': return ['border-left-color', 'border-right-color']
+    case 'bcy': return ['border-top-color', 'border-bottom-color']
 
     // border-radius
-    case 'br': return ['border-radius'];
-    case 'br7': return ['border-top-left-radius'];
-    case 'br9': return ['border-top-right-radius'];
-    case 'br3': return ['border-bottom-right-radius'];
-    case 'br1': return ['border-bottom-left-radius'];
+    case 'br': return ['border-radius']
+    case 'br7': return ['border-top-left-radius']
+    case 'br9': return ['border-top-right-radius']
+    case 'br3': return ['border-bottom-right-radius']
+    case 'br1': return ['border-bottom-left-radius']
 
     // color
-    case 'ct': return ['color'];
-    case 'cb': return ['background-color'];
+    case 'ct': return ['color']
+    case 'cb': return ['background-color']
 
     // inset
-    case 'i': return ['inset'];
-    case 'i8': return ['top'];
-    case 'i6': return ['right'];
-    case 'i2': return ['bottom'];
-    case 'i4': return ['left'];
+    case 'i': return ['inset']
+    case 'i8': return ['top']
+    case 'i6': return ['right']
+    case 'i2': return ['bottom']
+    case 'i4': return ['left']
 
     // sizing
-    case 'w': return ['width'];
-    case 'wmin': return ['min-width'];
-    case 'wmax': return ['max-width'];
-    case 'h': return ['height'];
-    case 'hmin': return ['min-height'];
-    case 'hmax': return ['max-height'];
+    case 'w': return ['width']
+    case 'wmin': return ['min-width']
+    case 'wmax': return ['max-width']
+    case 'h': return ['height']
+    case 'hmin': return ['min-height']
+    case 'hmax': return ['max-height']
 
     // grid position
-    case 'gx': return ['grid-column'];
-    case 'g4': return ['grid-column-start'];
-    case 'g6': return ['grid-column-end'];
-    case 'gy': return ['grid-row'];
-    case 'g8': return ['grid-row-start'];
-    case 'g2': return ['grid-row-end'];
+    case 'gx': return ['grid-column']
+    case 'g4': return ['grid-column-start']
+    case 'g6': return ['grid-column-end']
+    case 'gy': return ['grid-row']
+    case 'g8': return ['grid-row-start']
+    case 'g2': return ['grid-row-end']
 
     // font
-    case 'ff': return ['font-family'];
-    case 'fs': return ['font-size'];
-    case 'fw': return ['font-weight'];
-    case 'fh': return ['line-height'];
+    case 'ff': return ['font-family']
+    case 'fs': return ['font-size']
+    case 'fw': return ['font-weight']
+    case 'fh': return ['line-height']
 
     // default
-    default: return [].concat(prop);
+    default:
+      if(appendShorthandsData.hasOwnProperty(prop)) {
+        return appendShorthandsData[prop]
+      } else {
+        return [].concat(prop)
+      }
   }
 }

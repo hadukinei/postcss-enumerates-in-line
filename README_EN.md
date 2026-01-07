@@ -5,24 +5,28 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v0.3.2
+## Revision: in v0.4.0
 
-- Added conditional CSS property names about below.
-  + `hover!`
-  + `dark!`
-  + `mq(<mediaQueries>)!`
-  + `data(<customDataElements>)`
-  + `aria(<ariaAttributes>)`
-- Changed default colors to [Flexoki].
-- Appended `_color.scss` file into this package.
-- Updated files as development samples, `test/gulp/` and `test/postcss/`.
+1. Color settings
+
+- Added a function `color[[...]]` for value of CSS property which designate a color.
+- Added a plugin's option `appendUserColors(...)` for extending user color themes.
+- Changed a plugin's option `prependDefaultColor` that default value turn to `false`.
+
+2. Shorthand settings
+
+- Added a plugin's option `appendShorthand(...)` for extending user shorthands which is used about CSS property name.
+
+3. CSS property
+
+- Added conditional CSS property name about below.
+  + `attr(<attributes>)`
 
 
 ## Maybe add functions
 
-- Add new conditional CSS property: `attr(<attributes>)!`.
-- Be able to define user generated shorthands.
-- Refine `[[...]]` syntax, and add to use `color-alpha[[...]]` syntax which is enable to add alpha channel to default colors (using in CSS property value).
+- Update sample programs.
+- Upgrade major version to v1.
 
 
 ---
@@ -50,16 +54,11 @@ Specific speaking, it takes the syntax like above -- language in [SCSS].
 >
 > There are shorthands; `my` means convined `margin-top` and `margin-bottom`, `ff` means `font-family`, and `fs` means `font-size`.
 > What are defining about shorthands, c.f. [Shorthands of property names](#shorthands-of-property-names).
+> And you can extend user shorthands yourself.
 >
 > You would separate CSS styles by `:` character so, property name appears in before and property value appears in after against `:`.
 > Whitespace characters (like a ` `) treat as separator of CSS styles. If you want to write whitespaces at property values, then may replace these by `^` character.
 >
-
-~~There are no imprements about state transition like a hover, media queries, dark mode, etc.; because I am wishing only to aim for enumerating CSS styles.~~
-
-~~> What do I want to say; this plugin do not have any `hover:`, `md:`, and `dark:` etc. at [Tailwind CSS].~~
-
-☑️In version 0.3.0 and upper.
 
 And also if you prepend below syntaxes into CSS property, would be available about conditional CSS properties.
 
@@ -68,6 +67,7 @@ And also if you prepend below syntaxes into CSS property, would be available abo
 - `mq(<mediaQueries>)!`: @media screen and &lt;mediaQueries&gt;
 - `data(<customDataElements>)!`: [data-&lt;customDataElement&gt;]
 - `aria(<ariaAttributes>)!`: [aria-&lt;ariaAttributes&gt;]
+- `attr(<attributes>)!`: [&lt;attributes&gt;]
 
 > There are syntax descriptions after indexes.
 
@@ -86,7 +86,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v0.3.2](#revision-in-v032)
+  - [Revision: in v0.4.0](#revision-in-v040)
   - [Maybe add functions](#maybe-add-functions)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
@@ -96,6 +96,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
       - [Media Queries](#media-queries)
       - [Custom data attribute](#custom-data-attribute)
       - [ARIA attributes](#aria-attributes)
+      - [Attribute property](#attribute-property)
     - [Special characters](#special-characters)
       - [COLON Character](#colon-character)
       - [EXCLAMATION character](#exclamation-character)
@@ -103,6 +104,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
       - [double SQUARE BRACKET character](#double-square-bracket-character)
     - [Default colors](#default-colors)
     - [Shorthands of property names](#shorthands-of-property-names)
+      - [User defined shorthands](#user-defined-shorthands)
   - [How to use this plugin](#how-to-use-this-plugin)
     - [How to use with gulp](#how-to-use-with-gulp)
       - [package.json](#packagejson)
@@ -121,6 +123,10 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
   - [Arguments of option settings](#arguments-of-option-settings)
     - [prependDefaultColor](#prependdefaultcolor)
     - [prependDefaultStyle](#prependdefaultstyle)
+    - [appendShorthand](#appendshorthand)
+    - [appendUserColor](#appendusercolor)
+      - [color\[\[...\]\] function](#color-function)
+      - [prependDefaultColor option](#prependdefaultcolor-option)
 
 <div class="x--hr"></div>
 
@@ -163,7 +169,7 @@ h1 {
 
 You can extend a syntax to `<condition>!<CssPropertyName>:<CssPropertyValue>` like above.
 
-Each condition (`hover!`, `dark!`, `mq(...)!`, `data(...)!`, and `aria(...)!`) are able to mate with others.
+Each condition (`hover!`, `dark!`, `mq(...)!`, `data(...)!`, `aria(...)!`, and `attr(...)!`) are able to mate with others.
 
 ```scss
 h1 {
@@ -171,7 +177,7 @@ h1 {
 }
 ```
 
-But can you not prepend consecutively same conditional type about `mq(...)!`, `data(...)!`, and `aria(...)!`.
+But can you not prepend consecutively same conditional type about `mq(...)!`, `data(...)!`, `aria(...)!`, and `attr(...)!`.
 Because these are only able to add the 1 type by 1 CSS property.
 
 If you want to enumerate conditions, please use by `,` splitting that located between `(` and`)`.
@@ -447,6 +453,36 @@ The ARIA attributes (which are as arguments of `aria(...)` function) can be desc
 > + `\`: %5D
 
 
+#### Attribute property
+
+This package equips dedicated conditional syntaxes about custom data attribute (`[data-*]`) and ARIA attribute (`[aria-*]`); however it can treat other attributes (`[*]`) by written in `attr(...)!`.
+
+That means `data(foo="bar")!` as equal as `attr(data-foo="bar")!`.
+
+If you wish to combine multiple attributes consecutively, can describe by `,` splitting syntax.
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums attr(download)!ct:red attr(title="heading",data-tags~="hello")!bw2:1px;
+}
+
+/* 🚀After */
+h1[download] {
+  color: red;
+}
+h1[title="heading"][data-tags~="hello"] {
+  border-bottom-width: 1px;
+}
+```
+
+The attributes (which are as arguments of `attr(...)` function) can be described in these combination; `attribute name`, `conditional operator`, `attribute value`.
+
+If do you need a attribute value (that means you want to need only attribute name like as `*[download]`), should not designate `conditional operator` and `attribute value`,
+
+For details, may see a section of [custom data attribute](#custom-data-attribute).
+
+
 ### Special characters
 
 There are 5 characters which behave especially; `:`, `^`, `!`, `[[`, and `]]`.
@@ -512,48 +548,56 @@ Because there ware annoying `^` characters they appear many and many times about
 
 This is experimental function. I am improving a transform compiler, so you will face at risk that would not insert whitespace characters to both end of calculation operators normally at your wish.
 
-It works to replace whitespace to `^` characters as this case too. But I recommend to take a surefire way, it is supplements by `^` characters manually without `[[` and `]]`.
+> It works to replace whitespace to `^` characters as this case too. But I recommend to take a surefire way, it is supplements by `^` characters manually without `[[` and `]]`.
+
+---
+
+Apart from the above, you can describe a distinctive syntax `color[[...]]` into a CSS property value.
+
+```scss
+h1 {
+  @enums ct:color[[yellow,600]];
+}
+```
+
+There are able to take multiple arguments with `,` separation for what use to retrieve the color value that are managed by this package.
+
+The above behavior is same as both `prependDefaultColor` (this is package option) turning to `true` and writing `@enums ct:var(--color-yellow-600);` in CSS property.
+
+```scss
+h1 {
+  @enums ct:color[[cyan,400,95%,rgb]];
+}
+```
+
+This function-like syntax takes 4 kind arguments in maximum.
+
+1. Color theme (e.g. `cyan`)
+2. Intensity level (e.g. `400`; which can be described in regex as `/[\d]+/`)
+3. Alpha value (e.g. `95%`; which can be described in regex as `/[\d]+[%]/`)
+4. Output style (e.g. `rgb`|`hsl`|`oklch`; these are interpreted as same in uppercase or lowercase)
+
+> If unspecified kind occurred in `color[...]` function, this package will apply as below.
+> 1. `base`
+> 2. `400`
+> 3. `100%`
+> 4. `hsl`
+
+You will eliminate some problems as below if use this function.
+- Can apply opacity.
+- And that also apply to user defined color theme which added by `appendUserColors(...)` in package option.
+- Can minimize CSS file size because there are no color settings in CSS variables. The `prependDefaultColor` option is still in a default value as `false`.
 
 
 ### Default colors
 
 Default colors forked from [Flexoki] v2.0 to this package.
 
-If you want to use it, call a CSS variable from CSS `var()` function.
-
-```scss
-body {
-  @enums ct:var(--color-red-400);
-}
-```
-
 [<img src="README.img/default_color.png" alt="Default color">](README.img/default_color.png)
 
-But currently you cannot use a CSS color settings with alpha channel which styles as `#RRGGBBAA`.
+As saying in the section of `color[[...]]`, you can extend original color theme yourself by using `appendUserColors(...)` in package option.
 
-So this packages includes `_color.scss` file.
-
-```scss
-@use '../node_modules/postcss-enumerates-in-line/_color.scss' as c;
-
-html {
-  color: #{c.$color-red-400}99; // D14D4199
-}
-```
-
-> I will implement `color-alpha[[<color-theme>,<color-depth>,<alpha>,<optional:output-style>]]` function futurity.
-
-```scss
-/* 🚧Before */
-html {
-  color: color-alpha[[red,400,60%,oklch]];
-}
-
-/* 🚀After */
-html {
-  color: oklch(0.597 0.1692 28.38 / 60%);
-}
-```
+See also [Arguments of option settings](#arguments-of-option-settings) in detail.
 
 
 ### Shorthands of property names
@@ -648,6 +692,13 @@ For example, `border-top-width:1px` as same as `bw8:1px`.
 `x` character means left & right, `y` means top & bottom.
 
 Numeric character (from `1` to `9`) are related to position of Ten-key pad.
+
+
+#### User defined shorthands
+
+You can extend shorthands which used in CSS property name, by designate a package option `appendShorthand(...)`.
+
+See also [Arguments of option settings](#arguments-of-option-settings) in detail.
 
 
 ## How to use this plugin
@@ -864,9 +915,9 @@ For lively using example about this package, you may mainly see a file `src/css/
 
 How to dealing with CSS about color settings that will add automatically.
 
-Default value: true (boolean|string)
+Default value: false (boolean|string)
 
-If you designate to `true` (either nothing to designate, or designate `"hsl"` including `"HSL"`), this package output color settings in HSL type to CSS files like below.
+If you designate to `true` (or designate `"hsl"` including `"HSL"`), this package output color settings in HSL type to CSS files like below.
 
 ```css
 :root {
@@ -924,3 +975,193 @@ You want to append your original reset CSS, please designate CSS blocks (string[
 It only works appending CSS styles, you cannot remove reset CSS styles which defined in this package.
 
 In the case of working perfectly original CSS styles, you may designate `false` to this option, and write these in your SCSS files.
+
+
+### appendShorthand
+
+Append user defined shorthands about CSS property name.
+
+Default value: [] (string[string,string[]])
+
+```javascript
+appendShorthand: [
+  ['pos', ['position']],
+],
+```
+
+When did you designate a value related to `appendShorthand(...)` like above, `pos` will work as a shorthand as `position`.
+
+```javascript
+appendShorthand: [
+  ['bw246', ['border-bottom-width', 'border-left-width', 'border-right-width']],
+],
+```
+
+You can also designate in a bulk as multiple property names.
+
+```javascript
+appendShorthand: [
+  ['lh', ['line-height']],
+],
+```
+
+There is a shorthand already that named as `fh` tied with `line-height`, and however you can prepare additional shorthands `lh` as alias by this option.
+
+```javascript
+appendShorthand: [
+  ['o', ['opacity']],
+],
+```
+
+But even if you try to register a shorthand `o` like above, there is already registered it which tied with `outline`. So ignored.
+
+You cannot overwrite settings of shorthand.
+
+Besides if this package saw a condition of unworkable syntax, that will be ignored.
+
+
+### appendUserColor
+
+Append user defined color themes.
+
+Default value: [] ({theme: &lt;string&gt;, levels: {level: &lt;number&gt;, rgb: &lt;string&gt;, hsl: &lt;string&gt;, oklch: &lt;string&gt;}[]}[])
+
+```javascript
+appendUserColor: [
+  {
+    theme: 'blood',
+    levels: [
+      {
+        level: 400,
+        rgb: '#660000',
+        hsl: 'hsl(0 100% 20%)',
+        oklch: 'oklch(0.3204 0.1315 29.23)',
+      },
+      {
+        level: 600,
+        rgb: '#D1001C',
+        hsl: 'hsl(352 100% 41%)',
+        oklch: 'oklch(0.5418 0.2202 26.04)',
+      },
+    ]
+  },
+]
+```
+
+If you designate like above, this package will register `blood` (that is written in an option value `theme`) as new color theme, then can be available to use these intensity levels `400` and `600`.
+
+> Cannot register a name of color theme in which is already registered as default color or other user defined color themes.
+
+There are 2 methods for how do you retrieve registered colors.
+
+1. `color[[...]]`
+2. `prependDefaultColor`
+
+
+#### color[[...]] function
+
+```scss
+/* 🚧Before */
+h1 {
+  @enums ct:color[[red,400]];
+}
+
+/* 🚀After */
+h1 {
+  color: hsl(5 61% 53.7%);
+}
+```
+
+This function-like CSS property value can take arguments which are 4 kinds maximum.
+
+Color theme (e.g. `red`), intensity level (e.g. `400`), alpha value (e.g. `100%`), and output style (e.g. `rgb`).
+
+Every kinds are optional arguments, so there are omittable.
+
+But, by and for syntax restriction, you need to designate arguments at least 1 kind and up.
+
+> 1. Color theme
+>
+> The name of default color theme, or that registered in `appendUserColor(...)` option.
+>
+> When you omit this value in `color[[...]]`, this package will apply a default value `base`.
+>
+> If you designate to this value as undefined name of color theme, this package will ignore it in internal erroring disposer.
+
+> 2. Intensity level
+>
+> The intensity level is a integer value between `0` (almost white) and `999` (almost black).
+>
+> When you omit this value in `color[[...]]`, this package will apply a default value `400`.
+>
+> At default color theme, Intensity level takes easily recognizable number.
+> But there are no limitation about range of interger value, when you registered by `appendUserColor(...)` option.
+>
+> If you designate to this value which unregistered intensity level at the color theme, this package will ignore it in internal erroring disposer.
+
+> 3. Alpha value
+>
+> The alpha value is a percentage value between `0%` (perfect transparency) and `100%` (perfect intransparency).
+>
+> When you omit this value in `color[[...]]`, this package will apply a default value `100%`.
+>
+> This value is available as decimal notation with `%` character like a `50.5%`.
+>
+> But you cannot designate without `%` character like a `1`, for example you will wish "I want to present a alpha value by decimal notation style which ranged among `0`, `0.5`,  and `1`."
+>
+> In above case, this package couldn't understand about `1`, "This number is what? Alpha value or intensity level?"
+>
+> Therefore you need to treat postfixing a PERCENT (`%`) character absolutely.
+
+> 4. Output style
+>
+> The output style is a string literal, how to print to CSS files.
+>
+> When you omit this value in `color[[...]]`, this package will apply a default value `hsl`.
+>
+> You can choose in this value as `hsl`, ` rgb`, and `oklch`.
+> These are interpreted as same in uppercase or lowercase.
+
+
+#### prependDefaultColor option
+
+```javascript
+enumSpreader({
+  prependDefaultColor: true,
+  // ...
+})
+```
+
+If you turn to other value than `false` in a package option `prependDefaultColor`, this print CSS variables about color themes to CSS files.
+
+> Available value is only `hsl`, `rgb`, `oklch`, and `true` (is equal as `hsl`).
+>
+> In the case of string literal (`hsl`, `rgb`, and `oklch`), there are interpreted as same in uppercase or lowercase.
+
+```css
+:root {
+  --color-red-400: hsl(5 61% 53.7%);
+}
+```
+
+You may designate to output CSS color values by using this settings.
+
+```scss
+/* 🚧Before */
+h1 {
+  @enums ct:var(--color-red-400);
+}
+
+/* 🚀After */
+h1 {
+  color: hsl(5 61% 53.7%);
+}
+```
+
+The advantage of this method is a point that you can also use color settings even if are over the out of "PostCSS Enumerates in Line" package.
+
+However, there are disadvantages.
+- You cannot apply an alpha value because there is no way to extract a real CSS color value from CSS variables.
+- Huge CSS variables for CSS color settings will be outputted in CSS files.It maybe impacts to page loading speed.
+
+Please use them according to wanted situation.
