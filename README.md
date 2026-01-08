@@ -5,9 +5,20 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## 更新点: v1.1.0
+## 更新点: v1.2.0
 
-- `color[[...]]`で引数がなかった場合、`#0000`へ変換するよう処理を変更
+- 以下の引用符に関する正規表現の不具合を修正
+  + `data(name="value")!`
+  + `aria(name="value")!`
+  + `attr(name="value")!`
+
+> `data(name='value')!`のように`'`で囲んでいる場合も含みます。
+
+- `mq(...)!`の`width`と`height`において、説明の抜けていた設定方法を加筆
+  + `mq(width=-1000px)`: `max-width: 1000px`と同等 ~~（記述済み）~~
+  + `mq(width=1000px-2000px)`: `min-width: 1000px and max-width: 2000px`と同等 ~~（記述済み）~~
+  + `mq(width=1000px-)`: `min-width: 1000px`と同等 ~~（記述済み）~~
+  + `mq(width=1000px)`: `width: 1000px`と同等 **（説明漏れ）**
 
 
 ---
@@ -68,7 +79,7 @@
 ## 目次
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [更新点: v1.1.0](#更新点-v110)
+  - [更新点: v1.2.0](#更新点-v120)
   - [目次](#目次)
   - [CSSでの記述方法](#cssでの記述方法)
     - [条件付き書式](#条件付き書式)
@@ -275,20 +286,22 @@ body {
 }
 ```
 
-> `width`に指定可能な条件値は、`-<length>`・`<length>-<length>`・`<length>-`の３種類です。
+> `width`に指定可能な条件値は、`-<length>`・`<length>-<length>`・`<length>-`・`<length>`の４種類です。
 >
 > `<length>`に指定可能なのは`px`・`rem`・`vw`など長さに関わる値です。
 >
 > + １つのみある`<length>`の前に`-`を付けた場合、`<length>`以下のメディアクエリを意味します（適用されるメディア特性は`max-width`）
 > + ２つの`<length>`を`-`で接続した場合、その区間以内であるメディアクエリを意味します（適用されるメディア特性は`min-width`と`max-width`）
 > + １つのみある`<length>`の後ろに`-`を付けた場合、`<length>`以上のメディアクエリを意味します（適用されるメディア特性は`min-width`）
+> + `<length>`が１つのみあって`-`がない場合、ビューポートサイズが`<length>`とまったく等しい状態を意味します（適用されるメディア特性は`width`）
 
 ```scss
 body {
   @enums
   mq(width:-480px)!m2:1rem
   mq(width:640px-1024px)!mx:1rem
-  mq(width:1280px)!m8:1rem
+  mq(width:1280px-)!m8:1rem
+  mq(width:540px)!m4:1rem
   ;
 }
 ```
@@ -302,7 +315,8 @@ body {
   @enums
   mq(height:-480px)!m2:1rem
   mq(height:640px-1024px)!mx:1rem
-  mq(height:1280px)!m8:1rem
+  mq(height:1280px-)!m8:1rem
+  mq(height:540px)!m4:1rem
   ;
 }
 ```
@@ -311,7 +325,7 @@ body {
 >
 > `@media (aspect-ratio: 16/9)`のような除算記号（`/`）を使った表記はできません。
 >
-> `width`・`height`に似た表記が可能で、`-<number>`・`<number>-<number>`・`<number>-`の３種類と`<number>`が実際に指定可能な条件値です。
+> `width`・`height`に似た表記が可能で、`-<number>`・`<number>-<number>`・`<number>-`・`<number>`の４種類が実際に指定可能な条件値です。
 >
 > + １つのみある`<number>`の前に`-`を付けた場合、`<number>`以下のメディアクエリを意味します（適用されるメディア特性は`max-aspect-ratio`）
 > + ２つの`<number>`を`-`で接続した場合、その区間以内であるメディアクエリを意味します（適用されるメディア特性は`min-aspect-ratio`と`max-aspect-ratio`）

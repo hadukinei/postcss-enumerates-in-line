@@ -271,9 +271,9 @@ export const enumSpreader = (options = {}) => {
               if(/data\(.+?\)!/.test(param[i])) {
                 setting.isData = []
                 ;(!!param[i].match(/data\((.+?)\)!/)[1] ? param[i].match(/data\((.+?)\)!/)[1] : '').split(',').forEach(q => {
-                  let v1 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)([\~\|\^\$\*]?=)['"](.*)['"]$/)
+                  let v1 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)([\~\|\^\$\*]?=)(?:(?=["])["](.*)["]|(?=['])['](.*)['])$/)
                   if(!!v1) {
-                    setting.isData.push(`[data-${v1[1]}${v1[2]}"${v1[3].replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
+                    setting.isData.push(`[data-${v1[1]}${v1[2]}"${(v1[3]||v1[4]).replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
                   } else {
                     let v2 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)$/)
                     if(!!v2) {
@@ -288,9 +288,9 @@ export const enumSpreader = (options = {}) => {
               if(/aria\(.+?\)!/.test(param[i])) {
                 setting.isAria = []
                 ;(!!param[i].match(/aria\((.+?)\)!/)[1] ? param[i].match(/aria\((.+?)\)!/)[1] : '').split(',').forEach(q => {
-                  let v = q.match(/^([a-z]+)=['"](.*)['"]$/)
+                  let v = q.match(/^([a-z]+)=(?:(?=["])["](.*)["]|(?=['])['](.*)['])$/)
                   if(!!v) {
-                    setting.isAria.push(`[aria-${v[1]}="${v[2].replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
+                    setting.isAria.push(`[aria-${v[1]}="${(v[2]||v[3]).replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
                   }
                 })
                 setting.isAria = setting.isAria.join('')
@@ -300,9 +300,9 @@ export const enumSpreader = (options = {}) => {
               if(/attr\(.+?\)!/.test(param[i])) {
                 setting.isAttr = []
                 ;(!!param[i].match(/attr\((.+?)\)!/)[1] ? param[i].match(/attr\((.+?)\)!/)[1] : '').split(',').forEach(q => {
-                  let v1 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)([\~\|\^\$\*]?=)['"](.*)['"]$/)
+                  let v1 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)([\~\|\^\$\*]?=)(?:(?=["])["](.*)["]|(?=['])['](.*)['])$/)
                   if(!!v1) {
-                    setting.isAttr.push(`[${v1[1]}${v1[2]}"${v1[3].replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
+                    setting.isAttr.push(`[${v1[1]}${v1[2]}"${(v1[3]||v1[4]).replace('\%','%25').replace('\"','%22').replace('\'','%27').replace('\`','%60').replace('\\','%5D')}"]`)
                   } else {
                     let v2 = q.match(/^([A-Za-z\d_](?:[A-Za-z\d_\-]*[A-Za-z\d_])?)$/)
                     if(!!v2) {

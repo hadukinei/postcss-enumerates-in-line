@@ -5,9 +5,20 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v1.1.0
+## Revision: in v1.2.0
 
-- When `color[[...]]` didn't lead any arguments, this package transform it to `#0000`.
+- fix regex problems of quote character (`'`, `"`) in below.
+  + `data(name="value")!`
+  + `aria(name="value")!`
+  + `attr(name="value")!`
+
+> `data(name='value')!` etc. too.
+
+- Touch up a documents adding about `width` and `height` in `mq(...)!`.
+  + `mq(width=-1000px)`: As equal as `max-width: 1000px` ~~(Already wrote)~~
+  + `mq(width=1000px-2000px)`: As equal as `min-width: 1000px and max-width: 2000px` ~~(Already wrote)~~
+  + `mq(width=1000px-)`: As equal as `min-width: 1000px` ~~(Already wrote)~~
+  + `mq(width=1000px)`: As equal as `width: 1000px` **(Missing explanation)**
 
 
 ---
@@ -67,7 +78,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v1.1.0](#revision-in-v110)
+  - [Revision: in v1.2.0](#revision-in-v120)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
     - [Conditional CSS property](#conditional-css-property)
@@ -275,20 +286,22 @@ body {
 }
 ```
 
-> In `width` case; there are 3 type of designatable value. `-<length>`, `<length>-<length>`, and `<length>-`.
+> In `width` case; there are 4 type of designatable value. `-<length>`, `<length>-<length>`, `<length>-`, and `<length>`.
 >
 > You will be able to designate to `<length>` as these numeric values, that is related to length which tied with CSS sizing units; `px`, `rem`, `vw`, etc.
 >
 > + In `-<length>` case (the syntax is `<length>` with `-` prefix) -- this plugin recognize it as "This media query is smaller than `<length>`". (Applied media feature is `max-width`.)
 > + In `<length>-<length>` case (the syntax is `-` sandwiching by 2 `<length>`) -- this plugin recognize it as "This media query still is range of between first `<length>` and second `<length>`". (Applied media feature are `min-width` and `max-width`.)
 > + In `<length>-` case (the syntax is `<length>` with `-` postfix) -- this plugin recognize it as "This media query is larger than `<length>`". (Applied media feature is `min-width`.)
+> + In `<length>` case (the syntax only is `<length>` and without any `-`) -- this plugin recognize it as "This viewport size is as just equal as `<length>`". (Applied media feature is `width`.)
 
 ```scss
 body {
   @enums
   mq(width:-480px)!m2:1rem
   mq(width:640px-1024px)!mx:1rem
-  mq(width:1280px)!m8:1rem
+  mq(width:1280px-)!m8:1rem
+  mq(width:540px)!m4:1rem
   ;
 }
 ```
@@ -302,7 +315,8 @@ body {
   @enums
   mq(height:-480px)!m2:1rem
   mq(height:640px-1024px)!mx:1rem
-  mq(height:1280px)!m8:1rem
+  mq(height:1280px-)!m8:1rem
+  mq(height:540px)!m4:1rem
   ;
 }
 ```
