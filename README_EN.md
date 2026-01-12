@@ -5,20 +5,9 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v1.2.0
+## Revision: in v1.3.0
 
-- fix regex problems of quote character (`'`, `"`) in below.
-  + `data(name="value")!`
-  + `aria(name="value")!`
-  + `attr(name="value")!`
-
-> `data(name='value')!` etc. too.
-
-- Touch up a documents adding about `width` and `height` in `mq(...)!`.
-  + `mq(width=-1000px)`: As equal as `max-width: 1000px` ~~(Already wrote)~~
-  + `mq(width=1000px-2000px)`: As equal as `min-width: 1000px and max-width: 2000px` ~~(Already wrote)~~
-  + `mq(width=1000px-)`: As equal as `min-width: 1000px` ~~(Already wrote)~~
-  + `mq(width=1000px)`: As equal as `width: 1000px` **(Missing explanation)**
+- Added new conditional syntax `p-hover(...)!` which will emit at hover event about parental element.
 
 
 ---
@@ -55,6 +44,7 @@ Specific speaking, it takes the syntax like above -- language in [SCSS].
 And also if you prepend below syntaxes into CSS property, would be available about conditional CSS properties.
 
 - `hover!`: :hover
+- `p-hover(<parentSelector>)!`: parentSelector:hover thisSelector
 - `dark!`: :root.dark
 - `mq(<mediaQueries>)!`: @media screen and &lt;mediaQueries&gt;
 - `data(<customDataElements>)!`: [data-&lt;customDataElement&gt;]
@@ -78,12 +68,13 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v1.2.0](#revision-in-v120)
+  - [Revision: in v1.3.0](#revision-in-v130)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
     - [Conditional CSS property](#conditional-css-property)
       - [Dark mode](#dark-mode)
       - [Mouse over state](#mouse-over-state)
+      - [Parental Mouse over state](#parental-mouse-over-state)
       - [Media Queries](#media-queries)
       - [Custom data attribute](#custom-data-attribute)
       - [ARIA attributes](#aria-attributes)
@@ -160,7 +151,7 @@ h1 {
 
 You can extend a syntax to `<condition>!<CssPropertyName>:<CssPropertyValue>` like above.
 
-Each condition (`hover!`, `dark!`, `mq(...)!`, `data(...)!`, `aria(...)!`, and `attr(...)!`) are able to mate with others.
+Each condition (`hover!`, `p-hover(...)!`, `dark!`, `mq(...)!`, `data(...)!`, `aria(...)!`, and `attr(...)!`) are able to mate with others.
 
 ```scss
 h1 {
@@ -238,6 +229,121 @@ h1:hover {
   color: red;
 }
 ```
+
+
+#### Parental Mouse over state
+
+Using `p-hover(<parentSelector>)!` case that of conditional syntax, this plugin behave to postfix to parental element (`<parentSelector>`) a mouse over pseudo class (`:hover`).
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums p-hover(a[download])!ct:red ct:black;
+}
+
+/* 🚀After */
+h1 {
+  color: black;
+}
+a[download]:hover h1 {
+  color: red;
+}
+```
+
+The argument of `p-hover(...)!` function is a CSS selector which is designated HTML element that will be applied with `:hover` pseudo class.
+
+```scss
+/* ❌️Bad */
+h1 {
+  @enums p-hover()!ct:red;
+}
+```
+
+If there are no arguments, the CSS style declaration will be ignored.
+
+```scss
+/* ❌️Bad */
+h1 {
+  @enums dark!p-hover(:root)!ct:red;
+}
+
+/* 🙁Unzip */
+:root.dark :root:hover h1 {
+  color: red;
+}
+```
+Please mind not to use both `p-hover(:root)!` and `dark!` in a same, because there are going to transform to `:root.dark :root:hover thisSelector` that never work and meanless.
+
+```scss
+/* ❌️NG */
+h1 {
+  @enums p-hover(.parent .child)!ct:red;
+}
+
+/* ⭕️OK */
+h1 {
+  @enums p-hover(.parent^.child)!ct:red;
+}
+
+/* 🙂Unzip */
+.parent .child:hover h1 {
+  color: red;
+}
+```
+
+CSS style declaration does not allow using with whitespace including half-width space character (` `).
+So if you wish connecting by descendant combinator (` `) like `p-hover(.parent .child)!`, then may replace whitespace to circumflex character (`^`) who ought to descript as `p-hover(.parent^.child)!`.
+
+```scss
+/* ❌️NG */
+h1 {
+  @enums p-hover(.parent > .child)!ct:red;
+}
+
+/* ⭕️OK */
+h1 {
+  @enums p-hover(.parent>.child)!ct:red;
+}
+
+/* 🙂Unzip */
+.parent > .child:hover h1 {
+  color: red;
+}
+```
+
+When using below combinators in CSS selector, you mustn't append whitespace about it at before or after.
+- `+`: next-sibling combinator
+- `>`: child combinator
+- `~`: subsequent sibling combinator
+- `,`: selector list
+
+Need to connect parent element, combinator, and child one without any gaps.
+So that will become syntaxes like a `p-hover(.parent>.child)!`.
+
+```scss
+/* ❌️Bad */
+h1 {
+  @enums p-hover(.classA,.classB)!ct:red;
+}
+
+/* ⭕️OK */
+h1 {
+  @enums p-hover(:is(.classA,.classB))!ct:red;
+}
+
+/* 🙁Unzip Bad */
+.classA, .classB:hover h1 {
+  color: red;
+}
+
+/* 🙂Unzip OK */
+:is(.classA,.classB):hover h1 {
+  color: red;
+}
+```
+
+The case of selector list in bare state as `p-hover(.classA,.classB)!` that are un-using `:is(...)` or `:where(...)`, this package will transform unfortunately to unintentional CSS selector as `.classA, .classB:hover thisSelector`.
+You should store inside functions which needs pseudo class list as that arguments.
 
 
 #### Media Queries

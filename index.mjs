@@ -156,6 +156,7 @@ export const enumSpreader = (options = {}) => {
             let param = node.params.replace(/[\s\t\r\n]+/g, ' ').split(' ')
             for(let i = 0, l = param.length; i < l; i ++) {
               let setting = {
+                isPHover: '',
                 isHover: false,
                 isDark: false,
                 isMq: '',
@@ -165,6 +166,11 @@ export const enumSpreader = (options = {}) => {
                 important: '',
                 prop: '',
                 value: '',
+              }
+
+              if(/p-hover\(.+?\)!/.test(param[i])) {
+                setting.isPHover = (!!param[i].match(/p-hover\((.+?)\)!/)[1] ? param[i].match(/p-hover\((.+?)\)!/)[1] : '').replace(/\^/g, ' ')
+                param[i] = param[i].replace(/p-hover\(.+?\)!/g, '')
               }
 
               if(/hover!/.test(param[i])) {
@@ -314,14 +320,18 @@ export const enumSpreader = (options = {}) => {
                 param[i] = param[i].replace(/attr\(.+?\)!/g, '')
               }
 
-              if(setting.isHover || setting.isDark || (setting.isMq !== '') || (setting.isData !== '') || (setting.isAria !== '') || (setting.isAttr !== '')) {
+              if((setting.isPHover !== '') || setting.isHover || setting.isDark || (setting.isMq !== '') || (setting.isData !== '') || (setting.isAria !== '') || (setting.isAttr !== '')) {
                 let regex = param[i].match(/^([\d\-a-z]+):([^!\s]+)(!)?$/)
                 setting.important = (!!regex[3]) ? ' !important' : ''
                 setting.prop = expandShorthand(regex[1])
                 setting.value = replaceCssPropertyValueWBracket(regex[2])
 
+                if(setting.isPHover !== '') {
+                  setting.isPHover += ':hover '
+                }
+
                 for(let j = 0, m = setting.prop.length; j < m; j ++) {
-                  const css = `${setting.isMq !== '' ? '@media screen and ' + setting.isMq + ' { ' : ''}${setting.isDark ? ':root.dark ' : ''}${rule.selector}${setting.isData}${setting.isAria}${setting.isAttr}${setting.isHover ? ':hover' : ''}{${setting.prop[j]}: ${setting.value}}${setting.isMq !== '' ? ' }' : ''}`
+                  const css = `${setting.isMq !== '' ? '@media screen and ' + setting.isMq + ' { ' : ''}${setting.isDark ? ':root.dark ' : ''}${setting.isPHover}${rule.selector}${setting.isData}${setting.isAria}${setting.isAttr}${setting.isHover ? ':hover' : ''}{${setting.prop[j]}: ${setting.value}}${setting.isMq !== '' ? ' }' : ''}`
                   rule.after(css)
                 }
               } else if(/^([\d\-a-z]+):([^!\s]+)(!)?$/.test(param[i])) {

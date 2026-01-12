@@ -5,20 +5,9 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## 更新点: v1.2.0
+## 更新点: v1.3.0
 
-- 以下の引用符に関する正規表現の不具合を修正
-  + `data(name="value")!`
-  + `aria(name="value")!`
-  + `attr(name="value")!`
-
-> `data(name='value')!`のように`'`で囲んでいる場合も含みます。
-
-- `mq(...)!`の`width`と`height`において、説明の抜けていた設定方法を加筆
-  + `mq(width=-1000px)`: `max-width: 1000px`と同等 ~~（記述済み）~~
-  + `mq(width=1000px-2000px)`: `min-width: 1000px and max-width: 2000px`と同等 ~~（記述済み）~~
-  + `mq(width=1000px-)`: `min-width: 1000px`と同等 ~~（記述済み）~~
-  + `mq(width=1000px)`: `width: 1000px`と同等 **（説明漏れ）**
+- 条件付き書式`p-hover(...)!` （親要素がhoverした場合）を追加
 
 
 ---
@@ -56,6 +45,7 @@
 またCSSプロパティ名の先頭に以下の書式を加筆することで、条件付きCSSプロパティに対応することができます。
 
 - `hover!`: :hover
+- `p-hover(<parentSelector>)!`: parentSelector:hover thisSelector
 - `dark!`: :root.dark
 - `mq(<mediaQueries>)!`: @media screen and &lt;mediaQueries&gt;
 - `data(<customDataElements>)!`: [data-&lt;customDataElement&gt;]
@@ -79,12 +69,13 @@
 ## 目次
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [更新点: v1.2.0](#更新点-v120)
+  - [更新点: v1.3.0](#更新点-v130)
   - [目次](#目次)
   - [CSSでの記述方法](#cssでの記述方法)
     - [条件付き書式](#条件付き書式)
       - [ダークモード](#ダークモード)
       - [マウスオーバー](#マウスオーバー)
+      - [祖先マウスオーバー](#祖先マウスオーバー)
       - [メディアクエリ](#メディアクエリ)
       - [カスタムデータ属性](#カスタムデータ属性)
       - [ARIA属性](#aria属性)
@@ -161,7 +152,7 @@ h1 {
 
 上記のように`条件付き書式!CSSプロパティ名:CSSプロパティ値`と記法を拡張することができます。
 
-`hover!`, `dark!`, `mq(...)!`, `data(...)!`, `aria(...)!`, `attr(...)!`はそれぞれ重ね掛けが可能です。
+`hover!`, `p-hover(...)!`, `dark!`, `mq(...)!`, `data(...)!`, `aria(...)!`, `attr(...)!`はそれぞれ重ね掛けが可能です。
 
 ```scss
 h1 {
@@ -238,6 +229,114 @@ h1:hover {
   color: red;
 }
 ```
+
+
+#### 祖先マウスオーバー
+
+条件付き書式`p-hover(<parentSelector>)!`を使うと、祖先要素がマウスオーバー状態（`:hover`）になった場合の擬似クラスを追加できます。
+
+```scss
+/* 🚧Before */
+h1 {
+  @emums p-hover(a[download])!ct:red ct:black;
+}
+
+/* 🚀After */
+h1 {
+  color: black;
+}
+a[download]:hover h1 {
+  color: red;
+}
+```
+
+`p-hover(...)`関数の引数は、`:hover`擬似クラスを適用する要素を指定するCSSセレクタになっています。
+
+```scss
+/* ❌️Bad */
+h1 {
+  @enums p-hover()!ct:red;
+}
+```
+
+引数が指定されなかった場合、そのCSSスタイル宣言は無視されます。
+
+```scss
+/* ❌️Bad */
+h1 {
+  @enums dark!p-hover(:root)!ct:red;
+}
+
+/* 🙁Unzip */
+:root.dark :root:hover h1 {
+  color: red;
+}
+```
+
+`p-hover(:root)!`と`dark!`を併用してしまうと、`:root.dark :root:hover thisSelector`という機能することのない無駄なCSSセレクタになってしまうためご注意ください。
+
+```scss
+/* ❌️NG */
+h1 {
+  @enums p-hover(.parent .child)!ct:red;
+}
+
+/* ⭕️OK */
+h1 {
+  @enums p-hover(.parent^.child)!ct:red;
+}
+
+/* 🙂Unzip */
+.parent .child:hover h1 {
+  color: red;
+}
+```
+
+宣言の中に半角スペース記号を含むホワイトスペースを使うことはできないため、子孫連結をする場合は`p-hover(.parent .child)!`ではなく`p-hover(.parent^.child)!`のようにしてサーカムフレックス記号（`^`）に置き換えてください。
+
+```scss
+/* ❌️NG */
+h1 {
+  @enums p-hover(.parent > .child)!ct:red;
+}
+
+/* ⭕️OK */
+h1 {
+  @enums p-hover(.parent>.child)!ct:red;
+}
+
+/* 🙂Unzip */
+.parent > .child:hover h1 {
+  color: red;
+}
+```
+
+次兄弟結合子（`+`）・子結合子（`>`）・後続兄弟結合子（`~`）・セレクタリスト記号（`,`）を使う場合、`p-hover(.parent>.child)!`のようにして前後に半角スペース記号を付けないでください。
+
+```scss
+/* ❌️Bad */
+h1 {
+  @enums p-hover(.classA,.classB)!ct:red;
+}
+
+/* ⭕️OK */
+h1 {
+  @enums p-hover(:is(.classA,.classB))!ct:red;
+}
+
+/* 🙁Unzip Bad */
+.classA, .classB:hover h1 {
+  color: red;
+}
+
+/* 🙂Unzip OK */
+:is(.classA,.classB):hover h1 {
+  color: red;
+}
+```
+
+`:is(...)`や`:where(...)`を用いずに剥き出しの状態でセレクタリストを`p-hover(.classA,.classB)!`のように記述すると、意図しない展開が行われてしまいます。
+必ず擬似クラスリストを引数に取る関数の中に収めてください。
 
 
 #### メディアクエリ
