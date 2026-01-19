@@ -27,6 +27,7 @@ let defaultStyle = [
   '::placeholder { opacity: 1; }',
   '::spelling-error { text-decoration: none; }',
   ':root { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Symbol", "Noto Color Emoji"; font-size: 16px; font-weight: 400; line-height: 1.5; tab-size: 4; }',
+  '@supports (padding: max(0px)) { body { padding: max(0px, env(safe-area-inset-top)) max(0px, env(safe-area-inset-right)) max(0px, env(safe-area-inset-bottom)) max(0px, env(safe-area-inset-left)); } }',
   'q::before, q::after { display: none; }',
   'h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }',
   'hr { height: 0; border-top-width: 1px; color: inherit; }',

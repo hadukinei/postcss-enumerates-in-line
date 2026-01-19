@@ -5,9 +5,10 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v1.3.0
+## Revision: in v1.4.0
 
-- Added new conditional syntax `p-hover(...)!` which will emit at hover event about parental element.
+- Added safe area for mobile phone into default reset CSS.
+- Updated dependencies.
 
 
 ---
@@ -68,7 +69,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v1.3.0](#revision-in-v130)
+  - [Revision: in v1.4.0](#revision-in-v140)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
     - [Conditional CSS property](#conditional-css-property)

@@ -5,9 +5,10 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## 更新点: v1.3.0
+## 更新点: v1.4.0
 
-- 条件付き書式`p-hover(...)!` （親要素がhoverした場合）を追加
+- デフォルトのリセットCSSにスマートフォン向けセーフエリアを追加
+- 依存パッケージの更新
 
 
 ---
@@ -69,7 +70,7 @@
 ## 目次
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [更新点: v1.3.0](#更新点-v130)
+  - [更新点: v1.4.0](#更新点-v140)
   - [目次](#目次)
   - [CSSでの記述方法](#cssでの記述方法)
     - [条件付き書式](#条件付き書式)
