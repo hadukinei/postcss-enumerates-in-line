@@ -28,6 +28,11 @@ interface EnumsEnumeratesInLineOptions extends object {
    * @param {Object{<string>,<string>[]}[]} appendShorthand - Append user shorthand settings to default shorthand.
    */
   appendShorthand?: []
+
+  /**
+   * @param {string} darkClassName - Designate a classname for dark mode
+   */
+  darkClassName?: '',
 }
 
 interface UserColor extends object {

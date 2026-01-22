@@ -16,6 +16,7 @@ import postcss from 'postcss'
 const pluginName = 'PostCSS Enumerates in Line'
 
 const defaultOptions = {
+  darkClassName: 'dark',
   prependDefaultColor: false,
   prependDefaultStyle: true,
   appendUserColor: [],
@@ -127,6 +128,7 @@ export const enumSpreader = (options = {}) => {
     prependDefaultStyle,
     appendUserColor,
     appendShorthand,
+    darkClassName,
   } = {...defaultOptions, ...options}
 
   if(prependDefaultColor === false) {
@@ -143,6 +145,10 @@ export const enumSpreader = (options = {}) => {
     prependDefaultStyle = []
   } else if((typeof prependDefaultStyle !== 'object') || (!prependDefaultStyle[0])) {
     prependDefaultStyle = false
+  }
+
+  if(!darkClassName) {
+    darkClassName = 'dark'
   }
 
   appendUserColors(appendUserColor)
@@ -332,7 +338,7 @@ export const enumSpreader = (options = {}) => {
                 }
 
                 for(let j = 0, m = setting.prop.length; j < m; j ++) {
-                  const css = `${setting.isMq !== '' ? '@media screen and ' + setting.isMq + ' { ' : ''}${setting.isDark ? ':root.dark ' : ''}${setting.isPHover}${rule.selector}${setting.isData}${setting.isAria}${setting.isAttr}${setting.isHover ? ':hover' : ''}{${setting.prop[j]}: ${setting.value}}${setting.isMq !== '' ? ' }' : ''}`
+                  const css = `${setting.isMq !== '' ? '@media screen and ' + setting.isMq + ' { ' : ''}${setting.isDark ? `:root.${darkClassName} ` : ''}${setting.isPHover}${rule.selector}${setting.isData}${setting.isAria}${setting.isAttr}${setting.isHover ? ':hover' : ''}{${setting.prop[j]}: ${setting.value}}${setting.isMq !== '' ? ' }' : ''}`
                   rule.after(css)
                 }
               } else if(/^([\d\-a-z]+):([^!\s]+)(!)?$/.test(param[i])) {

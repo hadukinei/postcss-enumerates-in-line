@@ -5,13 +5,12 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## Revision: in v1.4.0
+## Revision: in v1.5.0
 
-- Added safe area for mobile phone into default reset CSS.
-- Updated dependencies.
+- Added optional argument `darkClassName` which work changeable a classname corresponding with dark mode.
 
 
----
+## Overview
 
 This [PostCSS] plugin extend to multiple CSSes from shrinked it which described in 1 line like `@apply` syntax of [Tailwind CSS].
 
@@ -25,7 +24,7 @@ This [PostCSS] plugin extend to multiple CSSes from shrinked it which described 
   }
 
   &--description {
-    @enums fs:0.85em;
+    @enums fs:0.85em hover!ct:color[[red,400]];
   }
 }
 ```
@@ -69,7 +68,8 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
 ## Indexes
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [Revision: in v1.4.0](#revision-in-v140)
+  - [Revision: in v1.5.0](#revision-in-v150)
+  - [Overview](#overview)
   - [Indexes](#indexes)
   - [Method of writing in CSS files.](#method-of-writing-in-css-files)
     - [Conditional CSS property](#conditional-css-property)
@@ -110,6 +110,7 @@ I think primary usage is [gulp] and [gulp-postcss]. However it also works on JS-
     - [appendUserColor](#appendusercolor)
       - [color\[\[...\]\] function](#color-function)
       - [prependDefaultColor option](#prependdefaultcolor-option)
+    - [darkClassName](#darkclassname)
 
 <div class="x--hr"></div>
 
@@ -195,6 +196,10 @@ h1[data-state="succeed"][data-target-href^="https://"] {
 #### Dark mode
 
 Using `dark!` case that of conditional syntax, this plugin behave to judge whether does `root:` (html element) have a `dark` class?
+
+In the default settings, this package apply a classname `dark` against `:root`.
+However you can designate an arbitrary string to it by optional argument `darkClassName`.
+
 
 ```scss
 /* 🚧Before */
@@ -1274,3 +1279,18 @@ However, there are disadvantages.
 - Huge CSS variables for CSS color settings will be outputted in CSS files.It maybe impacts to page loading speed.
 
 Please use them according to wanted situation.
+
+
+### darkClassName
+
+Designate to change a classname  corresponding with dark mode.
+
+Default value: 'dark' (string)
+
+This package output `:root.dark` as dark mode condition into CSS files, when you designate nothing; because it applied a default value `dark`.
+
+```javascript
+darkClassName: 'is-dark',
+```
+
+However you designate as above (set a value as `is-dark`), it would be changed to `:root.is-dark` as dark mode condition and outputted so.

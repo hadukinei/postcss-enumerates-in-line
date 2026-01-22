@@ -5,13 +5,12 @@
 |[<img width="24" height="24" align="left" src="README.img/1f1ef-1f1f5.png" alt="🇯🇵"> 日本語](README.md)|[<img width="24" height="24" align="left" src="README.img/1f1fa-1f1f8.png" alt="🇺🇸"> English](README_EN.md)|
 
 
-## 更新点: v1.4.0
+## 更新点: v1.5.0
 
-- デフォルトのリセットCSSにスマートフォン向けセーフエリアを追加
-- 依存パッケージの更新
+- ダークモードに対応するクラス名を変更可能にするオプション引数「darkClassName」を追加
 
 
----
+## 概要
 
 この[PostCSS]プラグインは、複数のCSSプロパティを1つの行にまとめ上げて記述できるようにします。
 
@@ -27,14 +26,14 @@
   }
 
   &--description {
-    @enums fs:0.85em;
+    @enums fs:0.85em hover!ct:color[[red,400]];
   }
 }
 ```
 
 具体的には上のような書式を取ります。（言語は[SCSS]）
 
-> `@enum`で始まるat-rulesの一種であり、`@apply`と記述方法は全く同じです。
+> `@enums`で始まるat-rulesの一種であり、`@apply`と記述方法は全く同じです。
 >
 > `my`は`margin-top` & `margin-bottom`の、`ff`は`font-family`の、`fs`は`font-size`のショートハンドです。
 > 何がショートハンドとして定義されているかは[プロパティ名のショートハンド](#プロパティ名のショートハンド)を参照してください。
@@ -70,7 +69,8 @@
 ## 目次
 
 - [PostCSS Enumerates in Line](#postcss-enumerates-in-line)
-  - [更新点: v1.4.0](#更新点-v140)
+  - [更新点: v1.5.0](#更新点-v150)
+  - [概要](#概要)
   - [目次](#目次)
   - [CSSでの記述方法](#cssでの記述方法)
     - [条件付き書式](#条件付き書式)
@@ -111,6 +111,7 @@
     - [appendUserColor](#appendusercolor)
       - [color\[\[...\]\]関数](#color関数)
       - [prependDefaultColorオプション](#prependdefaultcolorオプション)
+    - [darkClassName](#darkclassname)
 
 <div class="x--hr"></div>
 
@@ -195,6 +196,9 @@ h1[data-state="succeed"][data-target-href^="https://"] {
 #### ダークモード
 
 条件付き書式`dark!`を使うと、`root:`（html要素）に`dark`クラスが存在するかどうかで判定できるようになります。
+
+初期状態でのクラス名は`dark`ですが、オプション引数「darkClassName」で任意の文字列に変更することができます。
+
 
 ```scss
 /* 🚧Before */
@@ -1257,3 +1261,18 @@ h1 {
 しかしアルファ値の設定ができなかったり、あるいは大量に出力されるCSS変数のためCSSファイルのサイズが肥大化したりする点はデメリットです。
 
 状況に応じて使い分けてください。
+
+
+### darkClassName
+
+ダークモードに対応するクラス名の変更。
+
+初期値: 'dark' (string)
+
+何も指定しなかった場合は初期値の`dark`が適用されるため、`:root.dark`がダークモード判定としてCSSファイルに出力されます。
+
+```javascript
+darkClassName: 'is-dark',
+```
+
+上記のように設定変更すると`:root.is-dark`がダークモード判定に使われるようになります。

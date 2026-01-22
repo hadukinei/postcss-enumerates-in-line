@@ -49,6 +49,7 @@ const task_css = done => {
     enumSpreader({
       //prependDefaultColor: 'rgb',
       //prependDefaultStyle: false,
+      //darkClassName: 'is-dark',
       appendShorthand: [
         ['gtc', ['grid-template-columns']],
         ['fd', ['text-decoration']],
